@@ -1,0 +1,20 @@
+{
+    "name": "stevie/mirror",
+    "authors": [
+        {
+            "name": "Stevie",
+            "email": "791369498@qq.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "guzzlehttp/guzzle": "^7.4",
+        "symfony/var-dumper": "^5|^6",
+        "symfony/cache": "^5|^6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Stevie\\Mirror\\": "src/"
+        }
+    }
+}
