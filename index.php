@@ -1,6 +1,8 @@
 <?php
 require './vendor/autoload.php';
 
+ini_set('max_execution_time', 3);
+
 if(isset($_SERVER['HTTP_IF_NONE_MATCH'])) { 
     http_response_code(304);
     exit; 
@@ -10,7 +12,7 @@ $startTime = microtime(true);
 
 $client = new \GuzzleHttp\Client();
 
-$origin = 'https://httpbin.org';
+$origin = 'https://dev.to';
 
 $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http';
 $replaceOrigin = $http_type.'://'.$_SERVER['HTTP_HOST'];
@@ -31,11 +33,12 @@ $args = [
 $response = $client->request($args['method'], $origin.$args['uri'], [
     'headers' => $args['headers'],
 ]);
+
 $content = $response->getBody()->getContents();
 if(is_string($content)) $content = str_replace($origin, $replaceOrigin, $content);
 
 header('Server-Timing: app;dur='. round((microtime(true) - $startTime) * 1000, 2));
-$excpt = ['Connection', 'Date'];
+$excpt = ['Connection', 'Date', 'Server-Timing'];
 http_response_code($response->getStatusCode());
 foreach ($response->getHeaders() as $key => $value) {
     if(in_array($key, $excpt)) continue;
