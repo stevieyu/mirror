@@ -14,11 +14,6 @@ $client = new \GuzzleHttp\Client();
 
 $origin = 'https://dev.to';
 
-$http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https' : 'http';
-$replaceOrigin = $http_type.'://'.$_SERVER['HTTP_HOST'];
-
-//dd($_SERVER);
-
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
     'uri' => $_SERVER['REQUEST_URI'] ?? $_SERVER['PATH_INFO'],
@@ -38,7 +33,7 @@ $response = $client->request($args['method'], $origin.$args['uri'], [
 ]);
 
 $content = $response->getBody()->getContents();
-if(is_string($content)) $content = str_replace($origin, $replaceOrigin, $content);
+if(is_string($content)) $content = str_replace($origin, '', $content);
 
 http_response_code($response->getStatusCode());
 header('Server-Timing: app;dur='. round((microtime(true) - $startTime) * 1000, 2));
