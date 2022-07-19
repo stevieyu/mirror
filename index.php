@@ -8,13 +8,21 @@ if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) {
     exit; 
 }
 
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Origin: *');
-header("Access-Control-Request-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header('Access-Control-Allow-Headers: content-type');
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400');
+}
 
-if($_SERVER['REQUEST_METHOD'] == 'OPTIONS'){
-    exit;
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])){
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    }
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])){
+        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+    }
+    exit; 
 }
 
 $startTime = microtime(true);
