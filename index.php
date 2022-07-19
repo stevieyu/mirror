@@ -8,6 +8,15 @@ if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) {
     exit; 
 }
 
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Origin: *');
+header("Access-Control-Request-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header('Access-Control-Allow-Headers: content-type');
+
+if($_SERVER['REQUEST_METHOD'] == 'OPTIONS'){
+    exit;
+}
+
 $startTime = microtime(true);
 
 $client = new \GuzzleHttp\Client();
