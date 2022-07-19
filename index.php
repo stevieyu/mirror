@@ -3,7 +3,7 @@ require './vendor/autoload.php';
 
 ini_set('max_execution_time', 3);
 
-if(isset($_SERVER['HTTP_IF_NONE_MATCH'])) { 
+if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
     http_response_code(304);
     exit; 
 }
@@ -37,11 +37,12 @@ $response = $client->request($args['method'], $origin.$args['uri'], [
 $content = $response->getBody()->getContents();
 if(is_string($content)) $content = str_replace($origin, $replaceOrigin, $content);
 
-header('Server-Timing: app;dur='. round((microtime(true) - $startTime) * 1000, 2));
-$excpt = ['Connection', 'Date', 'Server-Timing'];
 http_response_code($response->getStatusCode());
+header('Server-Timing: app;dur='. round((microtime(true) - $startTime) * 1000, 2));
+
+$only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'Set-Cookie'];
 foreach ($response->getHeaders() as $key => $value) {
-    if(in_array($key, $excpt)) continue;
+    if(!in_array($key, $only)) continue;
     header($key.': '.implode(' ', $value), true);
 }
 
