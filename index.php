@@ -29,9 +29,12 @@ $args = [
     ],
 ];
 
+$stack = \GuzzleHttp\HandlerStack::create();
+$stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(), 'cache');
 
 $response = $client->request($args['method'], $origin.$args['uri'], [
     'headers' => $args['headers'],
+    'handler' => $stack
 ]);
 
 $content = $response->getBody()->getContents();

@@ -9,10 +9,10 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "guzzlehttp/guzzle": "^7.4",
-        "symfony/cache": "^5|^6"
+        "kevinrob/guzzle-cache-middleware": "^4.0"
     },
     "require-dev": {
-        "symfony/var-dumper": "^5.4"
+        "symfony/var-dumper": "^5|^6"
     },
     "autoload": {
         "psr-4": {
