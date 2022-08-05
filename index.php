@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 
-$origin = $_COOKIE['origin'] ?? 'http://httpbin.org/anything';
+$origin = $_COOKIE['origin'] ?? 'https://httpbin.org'; //anything
 
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
@@ -36,15 +36,22 @@ $args = [
     ],
 ];
 
-// TODO::添加并发缓存
-$cacheKey = hash('sha256', json_encode($args));
-
 $startTime = microtime(true);
+
+// if($args['method'] === 'GET'){
+//     $cacheKey = hash('md5', json_encode($args));
+// }
 
 $client = new \GuzzleHttp\Client();
 
 $stack = \GuzzleHttp\HandlerStack::create();
-$stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(), 'cache');
+$stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
+    new \Kevinrob\GuzzleCache\Strategy\PublicCacheStrategy(
+        new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
+            new \League\Flysystem\Adapter\Local('./cache')
+        )
+    )
+), 'cache');
 
 $response = $client->request($args['method'], $args['url'], [
     'headers' => $args['headers'],
