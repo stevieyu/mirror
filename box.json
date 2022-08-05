@@ -1,9 +1,7 @@
 {
     "main": "index.php",
     "stub": false,
-    "output": "vendor.phar",
-    "check-requirements": false,
-    "dump-autoload": false,
+    "output": "mirror.phar",
     "compression": "GZ",
     "finder": [
       {
