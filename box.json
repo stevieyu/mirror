@@ -1,0 +1,26 @@
+{
+    "main": "vendor/autoload.php",
+    "stub": false,
+    "output": "vendor.phar",
+    "check-requirements": false,
+    "dump-autoload": false,
+    "compression": "GZ",
+    "finder": [
+      {
+        "name": "/.*\\.php|.*\\.json|.*\\.yaml|.*\\.xml/",
+        "exclude": [
+          "doc",
+          "test",
+          "test_old",
+          "tests",
+          "Tests",
+          "vendor-bin"
+        ],
+        "in": "vendor"
+      }
+    ],
+    "compactors": [
+      "KevinGH\\Box\\Compactor\\Php",
+      "KevinGH\\Box\\Compactor\\Json"
+    ]
+  }

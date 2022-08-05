@@ -1,5 +1,7 @@
 <?php
-require './vendor/autoload.php';
+declare(strict_types=1);
+
+require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
 
 ini_set('max_execution_time', 3);
 

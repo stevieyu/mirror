@@ -15,6 +15,13 @@
     "require-dev": {
         "symfony/var-dumper": "^5|^6"
     },
+    "scripts":{
+        "install-box": "wget https://github.91chi.fun/https://github.com//box-project/box/releases/download/4.0.2/box.phar && chmod +x box.phar",
+        "box": [
+            "composer install --no-dev",
+            "./box.phar compile"
+        ]
+    },
     "autoload": {
         "psr-4": {
             "Stevie\\Mirror\\": "src/"
