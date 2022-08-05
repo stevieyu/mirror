@@ -27,7 +27,8 @@ $startTime = microtime(true);
 
 $client = new \GuzzleHttp\Client();
 
-$origin = 'https://dev.to';
+$origin = 'http://httpbin.org/anything';
+$url = preg_replace('/\/$/', '', trim($origin.$args['uri']));
 
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
@@ -42,7 +43,7 @@ $args = [
 $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(), 'cache');
 
-$response = $client->request($args['method'], $origin.$args['uri'], [
+$response = $client->request($args['method'], $url, [
     'headers' => $args['headers'],
     'handler' => $stack
 ]);
@@ -61,16 +62,3 @@ foreach ($response->getHeaders() as $key => $value) {
 
 echo $content;
 
-
-
-
-
-
-// Send an asynchronous request.
-// $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org/get');
-
-// $promise = $client->sendAsync($request)->then(function ($response) {
-//     echo 'I completed! ' . $response->getBody();
-// });
-// echo "promise";
-// $promise->wait();
