@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
+//require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
+require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
 
 ini_set('max_execution_time', 3);
 
@@ -50,7 +51,7 @@ $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     new \Kevinrob\GuzzleCache\Strategy\PublicCacheStrategy(
         new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
-            new \League\Flysystem\Adapter\Local('./cache')
+            new \League\Flysystem\Adapter\Local('/tmp')
         )
     )
 ), 'cache');
