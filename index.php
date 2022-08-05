@@ -33,10 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 $startTime = microtime(true);
 
 $origin = $_GET['_origin'] ?? '';
-if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['origin'] && get_headers($origin, true)){
-    setcookie('origin', $origin, 0, '/');
+if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['_origin'] && get_headers($origin, true)){
+    setcookie('_origin', $origin, 0, '/');
 }else{
-    $origin = $_COOKIE['origin'] ?? 'https://httpbin.org'; //anything
+    $origin = $_COOKIE['_origin'] ?? 'https://httpbin.org'; //anything
 }
 
 $args = [
@@ -45,7 +45,7 @@ $args = [
     'headers' => array_filter([
         'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
         'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-        'Cookie' => $_SERVER['HTTP_COOKIE'] ??'',
+        'Cookie' => preg_replace('/;? ?_origin=[\w.%]+;? ?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
     ]),
 ];
 
