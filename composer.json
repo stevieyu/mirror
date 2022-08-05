@@ -19,7 +19,8 @@
         "install-box": "wget https://github.91chi.fun/https://github.com//box-project/box/releases/download/4.0.2/box.phar && chmod +x box.phar",
         "box": [
             "composer install --no-dev",
-            "./box.phar compile"
+            "./box.phar compile",
+            "composer install"
         ]
     },
     "autoload": {
