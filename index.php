@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-//require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
-require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
+require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
+//require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
 
 ini_set('max_execution_time', 3);
 
@@ -32,11 +32,11 @@ $origin = $_COOKIE['origin'] ?? 'https://httpbin.org'; //anything
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
     'url' => preg_replace('/\/$/', '', trim($origin.($_SERVER['REQUEST_URI'] ?? $_SERVER['PATH_INFO']))),
-    'headers' => [
-        'Accept' => $_SERVER['HTTP_ACCEPT'],
-        'User-Agent' => $_SERVER['HTTP_USER_AGENT'],
-        'Cookie' => $_SERVER['HTTP_COOKIE'],
-    ],
+    'headers' => array_filter([
+        'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
+        'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+        'Cookie' => $_SERVER['HTTP_COOKIE'] ??'',
+    ]),
 ];
 
 $startTime = microtime(true);

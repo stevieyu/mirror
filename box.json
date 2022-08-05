@@ -1,5 +1,5 @@
 {
-    "main": "vendor/autoload.php",
+    "main": "index.php",
     "stub": false,
     "output": "vendor.phar",
     "check-requirements": false,
