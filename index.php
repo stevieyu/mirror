@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR);
+
 require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
 //require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
 
@@ -26,8 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit; 
 }
 
+$startTime = microtime(true);
 
-$origin = $_COOKIE['origin'] ?? 'https://httpbin.org'; //anything
+$origin = $_GET['_origin'] ?? '';
+if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['origin'] && get_headers($origin, true)){
+    setcookie('origin', $origin, 0, '/');
+}else{
+    $origin = $_COOKIE['origin'] ?? 'https://httpbin.org'; //anything
+}
 
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
@@ -38,8 +48,6 @@ $args = [
         'Cookie' => $_SERVER['HTTP_COOKIE'] ??'',
     ]),
 ];
-
-$startTime = microtime(true);
 
 // if($args['method'] === 'GET'){
 //     $cacheKey = hash('md5', json_encode($args));
