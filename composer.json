@@ -16,6 +16,7 @@
         "symfony/var-dumper": "^5|^6"
     },
     "scripts":{
+        "dev": "php -S 0.0.0.0:8088 index.php",
         "install-box": "wget https://cdn.githubjs.cf/box-project/box/releases/download/4.0.2/box.phar && chmod +x box.phar",
         "box": [
             "composer install --no-dev",

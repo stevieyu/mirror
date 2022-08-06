@@ -75,7 +75,7 @@ if(is_string($content)) $content = str_replace($origin, '', $content);
 http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
 
-$only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'Set-Cookie'];
+$only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'Set-Cookie', 'X-Kevinrob-Cache'];
 foreach ($response->getHeaders() as $key => $value) {
     if(!in_array($key, $only)) continue;
     header($key.': '.implode(' ', $value), true);
