@@ -39,7 +39,11 @@ if (!function_exists('getallheaders'))
     }
 }
 
-$url = $_GET['url'] ?? $_SERVER['QUERY_STRING'] ?? 'http://httpbin.org/anything';
+// print_r($_SERVER);exit();
+
+$url = $_GET['url'] ?? $_SERVER['QUERY_STRING'] ?? $_SERVER['PATH_INFO'] ?? 'http://httpbin.org/anything';
+if(substr($url, 0, 4) !== 'http') $url = 'http://'.$url;
+
 $file = '/tmp/' . hash('md5', $url.$_SERVER['HTTP_USER_AGENT']);
 
 function output_headers($file) {
