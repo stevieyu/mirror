@@ -39,10 +39,19 @@ if (!function_exists('getallheaders'))
     }
 }
 
+function getUAKey() {
+  $reg = '/(Safari|chrome)\/\w+.\w+/i';
+
+  preg_match($reg, $_SERVER['HTTP_USER_AGENT'] ?? '', $res);
+
+  return $res[0] ?? '';
+}
+
 $url = $_GET['url'] ?? $_SERVER['QUERY_STRING'] ?? $_SERVER['PATH_INFO'] ?? 'http://httpbin.org/anything';
 if(!preg_match('/^http(s)?:\\/\\/.+/', $url)) $url = 'http://'.$url;
 
-$file = '/tmp/' . hash('md5', $url.$_SERVER['HTTP_USER_AGENT']);
+$cache_key = hash('md5', $url).hash('md5', getUAKey());
+$file = '/tmp/static-' . $cache_key;
 
 function output_headers($file) {
   $info = json_decode(file_get_contents($file . '.json'), true);
@@ -56,7 +65,8 @@ function output_headers($file) {
   //header('Content-Length: ' . $info['download_content_length']);
 }
 
-if (file_exists($file)) {
+if (file_exists($file) && file_exists($file . '.json')) {
+  header('X-Cache-Key: '.$cache_key);
   output_headers($file);
   readfile($file);
   exit();
