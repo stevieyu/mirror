@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -27,11 +27,9 @@ if (!function_exists('getallheaders'))
 {
     function getallheaders()
     {
-       $headers = array ();
-       foreach ($_SERVER as $name => $value)
-       {
-           if (substr($name, 0, 5) == 'HTTP_')
-           {
+       $headers = [];
+       foreach ($_SERVER as $name => $value) {
+           if (substr($name, 0, 5) == 'HTTP_') {
                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
            }
        }
@@ -53,7 +51,7 @@ if(!preg_match('/^http(s)?:\\/\\/.+/', $url)) $url = 'http://'.$url;
 $cache_key = hash('md5', $url).hash('md5', getUAKey());
 $file = '/tmp/static-' . $cache_key;
 
-function output_headers($file) {
+function output_headers(string $file) {
   $info = json_decode(file_get_contents($file . '.json'), true);
 
   http_response_code($info['http_code']);
