@@ -63,7 +63,7 @@ function output_headers(string $file) {
   //header('Content-Length: ' . $info['download_content_length']);
 }
 
-if (file_exists($file) && file_exists($file . '.json')) {
+if (file_exists($file) && file_exists($file . '.json') && empty($_COOKIE['debug'])) {
   header('X-Cache-Key: '.$cache_key);
   output_headers($file);
   readfile($file);
