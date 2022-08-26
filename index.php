@@ -38,6 +38,8 @@ if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['
     $origin = $_COOKIE['_origin'] ?? 'https://httpbin.org'; //anything
 }
 
+$currentOrigin = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http').'://'.$_SERVER['HTTP_HOST'];
+
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
     'url' => preg_replace('/\/$/', '', trim($origin.($_SERVER['REQUEST_URI'] ?? $_SERVER['PATH_INFO']))),
@@ -45,12 +47,17 @@ $args = [
         'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
         'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
         'Cookie' => preg_replace('/;? ?_origin=[\w.%]+;? ?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
+        'Content-Type' => $_SERVER['HTTP_CONTENT_TYPE'] ?? $_SERVER['CONTENT_TYPE'] ?? '',
+        'Referer' => str_replace($currentOrigin, $origin, $_SERVER['HTTP_REFERER'] ?? '')
     ]),
+    'body' => file_get_contents('php://input')
 ];
 
 // if($args['method'] === 'GET'){
 //     $cacheKey = hash('md5', json_encode($args));
 // }
+
+//dd($args);
 
 $client = new \GuzzleHttp\Client();
 
@@ -65,7 +72,9 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
 
 $response = $client->request($args['method'], $args['url'], [
     'headers' => $args['headers'],
-    'handler' => $stack
+    'body' => $args['body'],
+    'handler' => $stack,
+    'http_errors' => false
 ]);
 
 $content = $response->getBody()->getContents();
