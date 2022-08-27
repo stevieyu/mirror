@@ -37,13 +37,13 @@ if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['
 }else{
     $origin = $_COOKIE['_origin'] ?? 'https://httpbin.org'; //anything
 }
-
 $currentOrigin = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http').'://'.$_SERVER['HTTP_HOST'];
 
 $args = [
     'method' => $_SERVER['REQUEST_METHOD'],
     'url' => preg_replace('/\/$/', '', trim($origin.($_SERVER['REQUEST_URI'] ?? $_SERVER['PATH_INFO']))),
     'headers' => array_filter([
+        'Authorization' => $_SERVER['HTTP_AUTHORIZATION'] ?? '',
         'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
         'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
         'Cookie' => preg_replace('/;? ?_origin=[\w.%]+;? ?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
