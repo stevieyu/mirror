@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-function builderRedirectUri($uri, $query){
+function builderRedirectUri(string $uri, array $query): string{
 	$parse_url_arr = parse_url($uri);
     $redirect_query_str = $parse_url_arr['query'] ?? '';
     if($redirect_query_str){
@@ -19,7 +19,7 @@ function builderRedirectUri($uri, $query){
 
     return $uri;
 }
-function builderAuthorize($query){
+function builderAuthorize(array $query): string{
 	$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     if (stristr($user_agent, 'MicroMessenger')) {
     	$uri = 'https://open.weixin.qq.com/connect/oauth2/authorize';
@@ -40,7 +40,7 @@ if(!empty($_GET['appid']) && !empty($_GET['response_type']) && !empty($_GET['sco
 	}
 
 	$origin = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http').'://'.$_SERVER['HTTP_HOST'];
-	$query['redirect_uri'] = $origin.'/wxauthorize.php';
+	$query['redirect_uri'] = $origin.$_SERVER['SCRIPT_NAME'];
 
 	http_response_code(301);
     header('Location: '.builderAuthorize($query));
