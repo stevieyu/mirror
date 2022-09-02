@@ -23,10 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit;
 }
 
-if (!function_exists('getallheaders'))
-{
-    function getallheaders()
-    {
+if (!function_exists('getallheaders')){
+    function getallheaders(){
        $headers = [];
        foreach ($_SERVER as $name => $value) {
            if (substr($name, 0, 5) == 'HTTP_') {
@@ -37,18 +35,13 @@ if (!function_exists('getallheaders'))
     }
 }
 
-function getUAKey() {
-  $reg = '/(Safari|chrome)\/\w+.\w+/i';
-
-  preg_match($reg, $_SERVER['HTTP_USER_AGENT'] ?? '', $res);
-
-  return $res[0] ?? '';
-}
-
 $url = $_GET['url'] ?? $_SERVER['QUERY_STRING'] ?? $_SERVER['PATH_INFO'] ?? 'http://httpbin.org/anything';
 if(!preg_match('/^http(s)?:\\/\\/.+/', $url)) $url = 'http://'.$url;
 
-$cache_key = hash('md5', $url).hash('md5', getUAKey());
+$cache_key = hash('md5', $url);
+if (!empty($_SERVER['HTTP_USER_AGENT']) && preg_match('/polyfill/', $url)) {
+    $cache_key.= hash('md5', $_SERVER['HTTP_USER_AGENT']);
+}
 $file = '/tmp/static-' . $cache_key;
 
 function output_headers(string $file) {
