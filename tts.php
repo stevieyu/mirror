@@ -9,7 +9,8 @@ $text = $_GET['w']??'本 text to speech 由百度翻译提供！';
 $text = urlencode($text);
 $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
 
-$dir = ($_SERVER['DOCUMENT_ROOT'] ?? getcwd()).'cache';
+// $dir = ($_SERVER['DOCUMENT_ROOT'] ?? '' ?: getcwd()).'/cache';
+$dir = '/tmp/tts';
 if(!file_exists($dir)) mkdir($dir);
 
 $cacheKey = md5($url);
