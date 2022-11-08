@@ -14,13 +14,15 @@ if(!file_exists($dir)) mkdir($dir);
 
 $cacheKey = md5($url);
 
-$content = '';
 $filepath = $dir.'/'.$cacheKey;
+
+$content = '';
+$metapath = $filepath.'.json';
 $meta = [];
 
-if(file_exists($filepath.'.json')){
+if(file_exists($metapath)){
     $content = file_get_contents($filepath);
-    $meta = json_decode(file_get_contents($filepath.'.json'), true);
+    $meta = json_decode(file_get_contents($metapath), true);
 }
 if(!$content){
     $content = file_get_contents($url);
@@ -29,10 +31,10 @@ if(!$content){
         return preg_match('/Content-Disposition|Content-Type/i', $i);
     }));
     $meta = compact('headers');
-    file_put_contents($filepath.'.json', json_encode($meta));
+    file_put_contents($metapath, json_encode($meta));
 }
 
-foreach($meta['headers'] as $i){
+foreach($meta['headers'] ?? [] as $i){
     header($i);
 }
 
