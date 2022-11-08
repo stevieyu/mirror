@@ -1,5 +1,10 @@
 <?php declare(strict_types = 1);
 
+if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) {
+    http_response_code(304);
+    exit;
+}
+
 $text = $_GET['w']??'本 text to speech 由百度翻译提供！';
 $text = urlencode($text);
 $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
@@ -30,6 +35,8 @@ if(!$content){
 foreach($meta['headers'] as $i){
     header($i);
 }
+
+header('Cache-Control: ' . 'public, max-age=31536000, s-maxage=31536000, immutable');
 
 echo $content;
 
