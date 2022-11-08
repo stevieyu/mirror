@@ -10,6 +10,7 @@ $text = urlencode($text);
 
 //curl 'https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=%E7%BF%BB%E8%AF%91%E5%90%9B%20%E5%85%A8%E6%96%B0%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E7%BF%BB%E8%AF%91%EF%BC%8C%20%E5%8F%A5%E5%AD%90%E3%80%81%E6%96%87%E7%AB%A0%E3%80%81%E8%AE%BA%E6%96%87%E3%80%81%E8%B5%84%E6%96%99%E7%BF%BB%E8%AF%91%E9%A6%96%E9%80%89&guid=5cf6771f-97b2-4240-b26b-6c45ef901d9e'   -H 'Referer: https://fanyi.qq.com/'
 //https://tts.youdao.com/fanyivoice?word=%E6%B5%8B%E8%AF%95%E6%B5%8B%E8%AF%95&le=zh&keyfrom=speaker-target
+//https://fanyi.sogou.com/reventondc/synthesis?text=%E4%BD%A0%E5%A5%BD%E4%B8%96%E7%95%8C&speed=1&lang=zh-CHS&speaker=1
 /*
 const tfetspktok = async () => {
     if(cache.get('tfetspktok')) return cache.get('tfetspktok');
