@@ -86,7 +86,10 @@ if(!$content){
     }));
     $meta = compact('headers');
     file_put_contents($metapath, json_encode($meta));
+}else{
+    header('X-Cache: ' . $cacheKey);
 }
+
 
 foreach($meta['headers'] ?? [] as $i){
     header($i);
