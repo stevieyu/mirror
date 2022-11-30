@@ -74,9 +74,14 @@ if(!$content){
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
     $content = file_get_contents($url);
     if(!$content) {
-        $source = 'sogou';
-        $url = "https://fanyi.sogou.com/reventondc/synthesis?text=$text&speed=1&lang=zh-CHS&speaker=1";
-        $content = file_get_contents($url);
+        $context = stream_context_create([
+            "http" => [
+                "header" => "Referer: https://fanyi.qq.com/"
+            ]
+        ]);
+        $source = 'qq';
+        $url = "https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=$text&guid=5cf6771f-97b2-4240-b26b-6c45ef901d9e";
+        $file = file_get_contents($url, false, $context);
     }
     if(!$content) {
         $source = 'youdao';
@@ -84,15 +89,9 @@ if(!$content){
         $content = file_get_contents($url);
     }
     if(!$content) {
-        $opts = [
-            "http" => [
-                "header" => "Referer: https://fanyi.qq.com/"
-            ]
-        ];
-        
-        $context = stream_context_create($opts);
-        $url = "https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=$text&guid=5cf6771f-97b2-4240-b26b-6c45ef901d9e";
-        $file = file_get_contents('http://www.example.com/', false, $context);
+        $source = 'sogou';
+        $url = "https://fanyi.sogou.com/reventondc/synthesis?text=$text&speed=1&lang=zh-CHS&speaker=1";
+        $content = file_get_contents($url);
     }
     file_put_contents($filepath, $content);
     $headers = array_values(array_filter($http_response_header, function($i){
