@@ -83,6 +83,27 @@ if(!$content){
         $url = "https://fanyi.sogou.com/reventondc/synthesis?text=$text&speed=1&lang=zh-CHS&speaker=1";
         $content = file_get_contents($url);
     }
+    if(!$content) {
+        $source = 'qq';
+        $url = "https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=$text";
+        $token = file_get_contents("https://fanyi.qq.com/api/reauth12f", false, stream_context_create([
+            "http" => [
+                'method'=>"POST",
+            ]
+        ]));
+        if($token) {
+            $token = json_decode($token);
+            $content = file_get_contents($url, false, stream_context_create([
+                "http" => [
+                    "header" => implode("\r\n", [
+                        'Referer: https://fanyi.qq.com/',
+                        'Cookie: qtv='.$token->qtv.';qtk='.$token->qtk
+                    ])
+                ]
+            ]));
+        }
+        if(strlen($content) <= 6400) $content = '';
+    }
     file_put_contents($filepath, $content);
     $headers = array_values(array_filter($http_response_header, function($i){
         return preg_match('/Content-Disposition|Content-Type/i', $i);
