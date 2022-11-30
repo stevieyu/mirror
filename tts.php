@@ -65,10 +65,10 @@ $content = '';
 $metapath = $filepath.'.json';
 $meta = [];
 
-// if(file_exists($metapath)){
-//     $content = file_get_contents($filepath);
-//     $meta = json_decode(file_get_contents($metapath), true);
-// }
+if(file_exists($metapath)){
+    $content = file_get_contents($filepath);
+    $meta = json_decode(file_get_contents($metapath), true);
+}
 if(!$content){
     $source = 'baidu';
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
@@ -86,18 +86,18 @@ if(!$content){
     if(!$content) {
         $source = 'qq';
         $url = "https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=$text";
-        $token = file_get_contents("https://fanyi.qq.com/api/reauth12f", false, stream_context_create([
-            "http" => [
-                'method'=>"POST",
+        $token = file_get_contents('https://fanyi.qq.com/api/reauth12f', false, stream_context_create([
+            'http' => [
+                'method'=> 'POST',
             ]
         ]));
         if($token) {
             $token = json_decode($token);
             $content = file_get_contents($url, false, stream_context_create([
-                "http" => [
-                    "header" => implode("\r\n", [
+                'http' => [
+                    'header' => implode("\r\n", [
                         'Referer: https://fanyi.qq.com/',
-                        'Cookie: qtv='.$token->qtv.';qtk='.$token->qtk
+                        "Cookie: qtv=$token->qtv;qtk=$token->qtk"
                     ])
                 ]
             ]));
@@ -120,7 +120,7 @@ foreach($meta['headers'] ?? [] as $i){
     header($i);
 }
 
-header('Cache-Control: ' . 'public, max-age=31536000, s-maxage=31536000, immutable');
+header('Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable');
 
 echo $content;
 
