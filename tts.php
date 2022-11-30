@@ -52,13 +52,12 @@ export default async (text = '本 text to speech 由 Bing 翻译提供') => {
     return URL.createObjectURL(blob)
 }
 */
-$url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
 
 // $dir = ($_SERVER['DOCUMENT_ROOT'] ?? '' ?: getcwd()).'/cache';
 $dir = '/tmp/tts';
 if(!file_exists($dir)) mkdir($dir);
 
-$cacheKey = md5($url);
+$cacheKey = md5($text);
 
 $filepath = $dir.'/'.$cacheKey;
 
@@ -71,7 +70,16 @@ if(file_exists($metapath)){
     $meta = json_decode(file_get_contents($metapath), true);
 }
 if(!$content){
+    $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
     $content = file_get_contents($url);
+    if(!$content) {
+        $url = "https://fanyi.sogou.com/reventondc/synthesis?text=$text&speed=1&lang=zh-CHS&speaker=1";
+        $content = file_get_contents($url);
+    }
+    if(!$content) {
+        $url = "https://tts.youdao.com/fanyivoice?word=$text&le=zh&keyfrom=speaker-target";
+        $content = file_get_contents($url);
+    }
     file_put_contents($filepath, $content);
     $headers = array_values(array_filter($http_response_header, function($i){
         return preg_match('/Content-Disposition|Content-Type/i', $i);
