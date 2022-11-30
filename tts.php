@@ -65,24 +65,14 @@ $content = '';
 $metapath = $filepath.'.json';
 $meta = [];
 
-if(file_exists($metapath)){
-    $content = file_get_contents($filepath);
-    $meta = json_decode(file_get_contents($metapath), true);
-}
+// if(file_exists($metapath)){
+//     $content = file_get_contents($filepath);
+//     $meta = json_decode(file_get_contents($metapath), true);
+// }
 if(!$content){
     $source = 'baidu';
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
     $content = file_get_contents($url);
-    if(!$content) {
-        $context = stream_context_create([
-            "http" => [
-                "header" => "Referer: https://fanyi.qq.com/"
-            ]
-        ]);
-        $source = 'qq';
-        $url = "https://fanyi.qq.com/api/tts?platform=PC_Website&lang=zh&text=$text&guid=5cf6771f-97b2-4240-b26b-6c45ef901d9e";
-        $file = file_get_contents($url, false, $context);
-    }
     if(!$content) {
         $source = 'youdao';
         $url = "https://tts.youdao.com/fanyivoice?word=$text&le=zh&keyfrom=speaker-target";
