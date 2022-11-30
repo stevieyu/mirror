@@ -70,13 +70,16 @@ if(file_exists($metapath)){
     $meta = json_decode(file_get_contents($metapath), true);
 }
 if(!$content){
+    $source = 'baidu';
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
     $content = file_get_contents($url);
     if(!$content) {
+        $source = 'sogou';
         $url = "https://fanyi.sogou.com/reventondc/synthesis?text=$text&speed=1&lang=zh-CHS&speaker=1";
         $content = file_get_contents($url);
     }
     if(!$content) {
+        $source = 'youdao';
         $url = "https://tts.youdao.com/fanyivoice?word=$text&le=zh&keyfrom=speaker-target";
         $content = file_get_contents($url);
     }
@@ -85,6 +88,7 @@ if(!$content){
         return preg_match('/Content-Disposition|Content-Type/i', $i);
     }));
     $meta = compact('headers');
+    $meta['headers'][] = "X-Source: $source";
     file_put_contents($metapath, json_encode($meta));
 }else{
     header('X-Cache: ' . $cacheKey);
