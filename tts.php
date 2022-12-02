@@ -70,7 +70,13 @@ if(file_exists($metapath)){
 if(!$content){
     $source = 'baidu';
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
-    $content = file_get_contents($url);
+    $content = file_get_contents($url, false, stream_context_create([
+        'http' => [
+            'header' => implode("\r\n", [
+                'User-Agent: curl/7.83.1',
+            ])
+        ]
+    ]));
     if(!$content) {
         $source = 'youdao';
         $url = "https://tts.youdao.com/fanyivoice?word=$text&le=zh&keyfrom=speaker-target";
