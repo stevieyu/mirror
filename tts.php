@@ -63,17 +63,19 @@ $content = '';
 $metapath = $filepath.'.json';
 $meta = [];
 
-if(file_exists($metapath)){
-    $content = file_get_contents($filepath);
-    $meta = json_decode(file_get_contents($metapath), true);
-}
+// if(file_exists($metapath)){
+//     $content = file_get_contents($filepath);
+//     $meta = json_decode(file_get_contents($metapath), true);
+// }
 if(!$content){
     $source = 'baidu';
     $url = "https://fanyi.baidu.com/gettts?lan=zh&text=$text&spd=5&source=web";
     $content = file_get_contents($url, false, stream_context_create([
         'http' => [
             'header' => implode("\r\n", [
-                'User-Agent: curl/7.83.1',
+                'Referer: https://fanyi.baidu.com/',
+                'Cookie: BAIDUID=94C8EA5CF28448327B544714078070BA:FG=1; BAIDUID_BFESS=94C8EA5CF28448327B544714078070BA:FG=1',
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.62',
             ])
         ]
     ]));
@@ -110,7 +112,7 @@ if(!$content){
     }
     file_put_contents($filepath, $content);
     $headers = array_values(array_filter($http_response_header, function($i){
-        return preg_match('/Content-Disposition|Content-Type/i', $i);
+        return preg_match('/Content-Type/i', $i);
     }));
     $meta = compact('headers');
     $meta['headers'][] = "X-Source: $source";
