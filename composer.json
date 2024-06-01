@@ -1,10 +1,6 @@
 {
     "name": "stevie/mirror",
     "authors": [
-        {
-            "name": "Stevie",
-            "email": "791369498@qq.com"
-        }
     ],
     "require": {
         "php": "^7.4 || ^8.0",
