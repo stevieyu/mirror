@@ -28,6 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     }
     exit; 
 }
+if(preg_match('/ico$/', $_SERVER['REQUEST_URI'])){
+    exit;
+}
+if(preg_match('/(ts)$/', $_SERVER['REQUEST_URI'])){
+    http_response_code(308);
+    header('Locaton: https:/'.$_SERVER['REQUEST_URI']);
+    exit;
+}
+
 
 $startTime = microtime(true);
 
