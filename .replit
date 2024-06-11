@@ -1,8 +1,9 @@
 modules = ["php-8.2"]
-run = "php -S 0.0.0.0:7878"
+run = "php -S 0.0.0.0:7878 index.php"
 
 [nix]
-channel = "stable-23_11"
+channel = "unstable"
 
-[deployment]
-run = ["sh", "-c", "php -S 0.0.0.0:7878"]
+[[ports]]
+localPort = 7878
+externalPort = 80

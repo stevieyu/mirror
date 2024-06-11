@@ -31,33 +31,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 $startTime = microtime(true);
 
-$origin = $_GET['_origin'] ?? '';
-if($origin && filter_var($origin, FILTER_VALIDATE_URL) && $origin !== $_COOKIE['_origin'] && get_headers($origin, true)){
-    setcookie('_origin', $origin, 0, '/');
-}else{
-    $origin = $_COOKIE['_origin'] ?? 'https://httpbin.org'; //anything
-}
-$currentOrigin = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'http').'://'.$_SERVER['HTTP_HOST'];
 
-$args = [
-    'method' => $_SERVER['REQUEST_METHOD'],
-    'url' => preg_replace('/\/$/', '', trim($origin.($_SERVER['REQUEST_URI'] ?? $_SERVER['PATH_INFO']))),
-    'headers' => array_filter([
-        'Authorization' => $_SERVER['HTTP_AUTHORIZATION'] ?? '',
-        'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
-        'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-        'Cookie' => preg_replace('/;? ?_origin=[\w.%]+;? ?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
-        'Content-Type' => $_SERVER['HTTP_CONTENT_TYPE'] ?? $_SERVER['CONTENT_TYPE'] ?? '',
-        'Referer' => str_replace($currentOrigin, $origin, $_SERVER['HTTP_REFERER'] ?? '')
-    ]),
-    'body' => file_get_contents('php://input')
-];
+$args = [];
+$args['method'] = $_SERVER['REQUEST_METHOD'];
+$args['body'] = file_get_contents('php://input');
 
-// if($args['method'] === 'GET'){
-//     $cacheKey = hash('md5', json_encode($args));
-// }
+$args['url'] = $_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']);
 
-//dd($args);
+if(!parse_url($args['url'], PHP_URL_HOST))$args['url'] = 'http://httpbin.org/anything';
+
+$args['headers'] = array_filter([
+    'Host' => $_SERVER['HTTP_HOST'],
+    'Authorization' => $_SERVER['HTTP_AUTHORIZATION'] ?? '',
+    'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
+    'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+    'Cookie' => $_SERVER['HTTP_COOKIE'] ?? '',
+    'Content-Type' => $_SERVER['HTTP_CONTENT_TYPE'] ?? '',
+    'Referer' => str_replace($_SERVER['HTTP_HOST'], parse_url($args['url'], PHP_URL_HOST), $_SERVER['HTTP_REFERER'] ?? ''),
+]);
+
+
+
+
+// dd($args, $_SERVER);
 
 $client = new \GuzzleHttp\Client();
 
@@ -70,15 +66,16 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     )
 ), 'cache');
 
+
 $response = $client->request($args['method'], $args['url'], [
     'headers' => $args['headers'],
     'body' => $args['body'],
-    'handler' => $stack,
+    // 'handler' => $stack,
     'http_errors' => false
 ]);
 
 $content = $response->getBody()->getContents();
-if(is_string($content)) $content = str_replace($origin, '', $content);
+if(is_string($content)) $content = str_replace(parse_url($args['url'], PHP_URL_HOST), '', $content);
 
 http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
