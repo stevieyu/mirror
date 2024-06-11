@@ -37,7 +37,6 @@ $args['method'] = $_SERVER['REQUEST_METHOD'];
 $args['body'] = file_get_contents('php://input');
 
 $args['url'] = $_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']);
-
 if(!parse_url($args['url'], PHP_URL_HOST))$args['url'] = 'http://httpbin.org/anything';
 
 $args['headers'] = array_filter([
@@ -59,10 +58,12 @@ $client = new \GuzzleHttp\Client();
 
 $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
-    new \Kevinrob\GuzzleCache\Strategy\PublicCacheStrategy(
+    new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
         new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
             new \League\Flysystem\Adapter\Local('/tmp')
-        )
+        ),
+        1800,
+        new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
     )
 ), 'cache');
 
@@ -70,7 +71,7 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
 $response = $client->request($args['method'], $args['url'], [
     'headers' => $args['headers'],
     'body' => $args['body'],
-    // 'handler' => $stack,
+    'handler' => $stack,
     'http_errors' => false
 ]);
 
