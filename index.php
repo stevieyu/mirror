@@ -62,7 +62,7 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
         new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
             new \League\Flysystem\Adapter\Local('/tmp')
         ),
-        1800,
+        60,
         new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
     )
 ), 'cache');
