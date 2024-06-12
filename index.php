@@ -31,11 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 if(preg_match('/ico$/', $_SERVER['REQUEST_URI'])){
     exit;
 }
-if(preg_match('/\.(ts)$/', $_SERVER['REQUEST_URI'])){
-    http_response_code(308);
-    header('Location: https:/'.$_SERVER['REQUEST_URI']);
-    exit;
-}
+
 
 if (!function_exists('getallheaders')){
     function getallheaders(){
@@ -102,6 +98,11 @@ $args['headers'] = array_filter(
 );
     
 
+if(preg_match('/\.(ts|jpg|png)$/', $args['url']['raw'])){
+    http_response_code(308);
+    header('Location: https:/'.$args['url']['raw']);
+    exit;
+}
 
 
 // dd($args, getallheaders());
