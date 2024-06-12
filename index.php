@@ -31,10 +31,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 if(preg_match('/ico$/', $_SERVER['REQUEST_URI'])){
     exit;
 }
-if(preg_match('/(ts)$/', $_SERVER['REQUEST_URI'])){
+if(preg_match('/\.(ts)$/', $_SERVER['REQUEST_URI'])){
     http_response_code(308);
     header('Location: https:/'.$_SERVER['REQUEST_URI']);
     exit;
+}
+
+if (!function_exists('getallheaders')){
+    function getallheaders(){
+       $headers = [];
+       foreach ($_SERVER as $name => $value) {
+           if (substr($name, 0, 5) == 'HTTP_') {
+               $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+           }
+       }
+       return $headers;
+    }
+}
+
+function URL($raw){
+    $url = parse_url($raw);
+    if(!$url || empty($url['host']) || !strstr($url['host'], '.') || !count(dns_get_record($url['host'], DNS_A))) return false;
+
+    return array_merge(
+        $url,
+        [
+            'origin' => preg_replace('/(\w+)\/.*/', '$1', $raw),
+            'raw' => $raw
+        ]
+    );
 }
 
 
@@ -48,23 +73,38 @@ $args = [];
 $args['method'] = $_SERVER['REQUEST_METHOD'];
 $args['body'] = file_get_contents('php://input');
 
-$args['url'] = $_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']);
-if(!parse_url($args['url'], PHP_URL_HOST))$args['url'] = 'http://httpbin.org/anything';
-
-$args['headers'] = array_filter([
-    'Host' => $_SERVER['HTTP_HOST'],
-    'Authorization' => $_SERVER['HTTP_AUTHORIZATION'] ?? '',
-    'Accept' => $_SERVER['HTTP_ACCEPT'] ?? '',
-    'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-    'Cookie' => $_SERVER['HTTP_COOKIE'] ?? '',
-    'Content-Type' => $_SERVER['HTTP_CONTENT_TYPE'] ?? '',
-    'Referer' => str_replace($_SERVER['HTTP_HOST'], parse_url($args['url'], PHP_URL_HOST), $_SERVER['HTTP_REFERER'] ?? ''),
-]);
+$args['url'] = URL($_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']));
+if(!$args['url']) {
+    $args['url'] = URL('https:/'.$_COOKIE['_to'].$_SERVER['REQUEST_URI']);
+}
+if(!$args['url']) {
+    $args['url'] = URL('https://httpbin.org/anything');
+}
+if($_COOKIE['_to'] != $args['url']['origin']){
+    setcookie('_to', $args['url']['origin'], 0, '/');
+}
 
 
 
+$args['headers'] = array_filter(
+    array_merge(
+        getallheaders(), 
+        [
+            'Host' => $args['url']['host'],
+            'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
+            'Referer' => str_replace($_SERVER['HTTP_HOST'], $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? ''),
+            'Accept-Encoding' => 'gzip, deflate',
+        ]
+    ), 
+    function($v, $k){
+        return $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k);
+    }, 
+    ARRAY_FILTER_USE_BOTH
+);
+    
 
-// dd($args, $_SERVER);
+
+// dd($args, getallheaders());
 
 $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
@@ -79,7 +119,7 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
 
 $client = new \GuzzleHttp\Client();
 
-$response = $client->request($args['method'], $args['url'], [
+$response = $client->request($args['method'], $args['url']['raw'], [
     'headers' => $args['headers'],
     'body' => $args['body'],
     'handler' => $stack,
@@ -87,7 +127,14 @@ $response = $client->request($args['method'], $args['url'], [
 ]);
 
 $content = $response->getBody()->getContents();
-if(is_string($content)) $content = str_replace(parse_url($args['url'], PHP_URL_HOST), '', $content);
+
+if(is_string($content)) {
+    $content = str_replace(
+        $args['url']['host'], 
+        getallheaders()['Host'], 
+        $content
+    );
+}
 
 http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
