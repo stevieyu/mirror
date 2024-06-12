@@ -97,7 +97,8 @@ $args['headers'] = array_filter(
         ]
     ), 
     function($v, $k){
-        return $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k);
+        return $v;
+        // return $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k);
     }, 
     ARRAY_FILTER_USE_BOTH
 );
