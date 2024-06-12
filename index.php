@@ -75,7 +75,7 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = URL($_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']));
 if(!$args['url']) {
-    $args['url'] = URL('https:/'.$_COOKIE['_to'].$_SERVER['REQUEST_URI']);
+    $args['url'] = URL($_COOKIE['_to'].$_SERVER['REQUEST_URI']);
 }
 if(!$args['url']) {
     $args['url'] = URL('https://httpbin.org/anything');
