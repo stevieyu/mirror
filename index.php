@@ -96,13 +96,12 @@ $args['headers'] = array_filter(
             'Accept-Encoding' => 'gzip, deflate',
         ]
     ), 
-    function($v, $k){
-        return $v;
-        // return $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k);
-    }, 
+    fn($v, $k) => $v,
+    // fn($v, $k) => $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
     ARRAY_FILTER_USE_BOTH
 );
     
+
 
 
 // dd($args, getallheaders());
@@ -117,6 +116,24 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
         new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
     )
 ), 'cache');
+
+$stack->push(\GuzzleHttp\Middleware::mapRequest(function (\Psr\Http\Message\RequestInterface $r) {
+    error_log('mapRequest: ' . json_encode([
+        'method' => $r->getMethod(),
+        'url' => $r->getUri()->__toString(),
+        'headers' => array_map(fn($i) => implode(' ', $i), $r->getHeaders()),
+        'body' => $r->getBody()->getContents(),
+    ]));
+    return $r;
+}));
+$stack->push(\GuzzleHttp\Middleware::mapResponse(function (\Psr\Http\Message\ResponseInterface $r) {
+    error_log('mapResponse: ' . json_encode([
+        'headers' => array_map(fn($i) => implode(' ', $i), $r->getHeaders()),
+        'body' => $r->getBody()->getContents(),
+    ]));
+    return $r;
+}));
+
 
 $client = new \GuzzleHttp\Client();
 
