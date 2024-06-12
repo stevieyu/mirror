@@ -86,6 +86,7 @@ $args['headers'] = array_filter(
     array_merge(
         getallheaders(), 
         [
+            'Origin' => $args['url']['origin'],
             'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
             'Referer' => str_replace($_SERVER['HTTP_HOST'], $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? ''),
@@ -127,13 +128,6 @@ $stack->push(\GuzzleHttp\Middleware::mapRequest(function (\Psr\Http\Message\Requ
     ]));
     return $r;
 }));
-$stack->push(\GuzzleHttp\Middleware::mapResponse(function (\Psr\Http\Message\ResponseInterface $r) {
-    error_log('mapResponse: ' . json_encode([
-        'headers' => array_map(fn($i) => implode(' ', $i), $r->getHeaders()),
-        'body' => $r->getBody()->getContents(),
-    ]));
-    return $r;
-}));
 
 
 $client = new \GuzzleHttp\Client();
@@ -146,6 +140,11 @@ $response = $client->request($args['method'], $args['url']['raw'], [
 ]);
 
 $content = $response->getBody()->getContents();
+
+error_log('mapResponse: ' . json_encode([
+    'headers' => array_map(fn($i) => implode(' ', $i), $response->getHeaders()),
+    'body' => $content,
+]));
 
 if(is_string($content)) {
     $content = str_replace(
