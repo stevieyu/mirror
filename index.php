@@ -33,12 +33,15 @@ if(preg_match('/ico$/', $_SERVER['REQUEST_URI'])){
 }
 if(preg_match('/(ts)$/', $_SERVER['REQUEST_URI'])){
     http_response_code(308);
-    header('Locaton: https:/'.$_SERVER['REQUEST_URI']);
+    header('Location: https:/'.$_SERVER['REQUEST_URI']);
     exit;
 }
 
 
 $startTime = microtime(true);
+
+
+
 
 
 $args = [];
@@ -63,8 +66,6 @@ $args['headers'] = array_filter([
 
 // dd($args, $_SERVER);
 
-$client = new \GuzzleHttp\Client();
-
 $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
@@ -76,6 +77,7 @@ $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     )
 ), 'cache');
 
+$client = new \GuzzleHttp\Client();
 
 $response = $client->request($args['method'], $args['url'], [
     'headers' => $args['headers'],
