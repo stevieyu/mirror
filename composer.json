@@ -6,17 +6,19 @@
         "php": "^7.4 || ^8.0",
         "guzzlehttp/guzzle": "^7.4",
         "kevinrob/guzzle-cache-middleware": "^4.0",
-        "league/flysystem": "^1"
+        "league/flysystem": "^1",
+        "humbug/box": "^4.6"
     },
     "require-dev": {
         "symfony/var-dumper": "^5|^6"
     },
     "scripts":{
         "dev": "php -S 0.0.0.0:8088 index.php",
-        "install-box": "wget https://cdn.githubjs.cf/box-project/box/releases/download/4.0.2/box.phar && chmod +x box.phar",
+        "install-box": "composer global require humbug/box",
         "box": [
             "composer install --no-dev",
-            "./box.phar compile",
+            "composer dump-autoload --classmap-authoritative --no-dev --ansi",
+            "box compile",
             "composer install"
         ]
     },

@@ -4,8 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR);
 
-require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
-//require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
+// require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
+require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
 
 ini_set('max_execution_time', 3);
 

@@ -1,7 +1,7 @@
 {
-    "main": "index.php",
+    "main": "vendor/autoload.php",
     "stub": false,
-    "output": "mirror.phar",
+    "output": "vendor.phar",
     "compression": "GZ",
     "finder": [
       {
@@ -17,6 +17,7 @@
         "in": "vendor"
       }
     ],
+  "dump-autoload": false,
     "compactors": [
       "KevinGH\\Box\\Compactor\\Php",
       "KevinGH\\Box\\Compactor\\Json"

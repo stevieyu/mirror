@@ -1,5 +1,6 @@
 modules = ["php-8.2"]
 run = "php -S 0.0.0.0:7878 index.php"
+hidden = []
 
 [nix]
 channel = "unstable"
