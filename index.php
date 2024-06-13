@@ -70,6 +70,9 @@ $args['method'] = $_SERVER['REQUEST_METHOD'];
 $args['body'] = file_get_contents('php://input');
 
 $args['url'] = URL($_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']));
+if(!$args['url'] && strstr($_SERVER['REQUEST_URI'], '/http')) {
+    $args['url'] = URL(preg_replace('/\/(https?:\/)\/?(.*)/', '$1/$2', $_SERVER['REQUEST_URI']));
+}
 if(!$args['url']) {
     $args['url'] = URL($_COOKIE['_to'].$_SERVER['REQUEST_URI']);
 }
