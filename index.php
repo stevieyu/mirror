@@ -69,7 +69,7 @@ $logStore = new \SleekDB\Store("log", '/tmp', [
  // $logStore->findAll();
 
 
-if(empty($_SERVER['PATH_INFO'])){
+if(preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'])){
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll());
     exit;
