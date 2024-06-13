@@ -1,4 +1,4 @@
 vendor
 cache
-.tmp
+tmp
 *.phar*
