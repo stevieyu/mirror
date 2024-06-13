@@ -62,8 +62,8 @@ function URL($raw){
 }
 
 $logStore = new \SleekDB\Store("log", __DIR__.'/tmp', [
-    "auto_cache" => true,
-    "cache_lifetime" => 60 * 60 * 24 * 7,
+    // "auto_cache" => true,
+    // "cache_lifetime" => 60 * 60 * 24 * 7,
 ]);
 // $logStore->insert($article);
  // $logStore->findAll();
