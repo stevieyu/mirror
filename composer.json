@@ -1,14 +1,12 @@
 {
     "name": "stevie/mirror",
-    "authors": [
-    ],
+    "authors": [],
     "require": {
-        "php": "^7.4 || ^8.0",
-        "guzzlehttp/guzzle": "^7.4",
-        "kevinrob/guzzle-cache-middleware": "^4.0",
-        "league/flysystem": "^1",
-        "humbug/box": "^4.6",
-        "catfan/medoo": "^2.1"
+        "php": "^7.4 || ^8",
+        "guzzlehttp/guzzle": "^7",
+        "kevinrob/guzzle-cache-middleware": "^5",
+        "league/flysystem": "^2",
+        "rakibtg/sleekdb": "^2.15"
     },
     "require-dev": {
         "symfony/var-dumper": "^5|^6"

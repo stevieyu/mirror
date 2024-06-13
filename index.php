@@ -6,8 +6,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ERROR);
 
-// require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
-require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
+
+require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
+// require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
 
 ini_set('max_execution_time', 3);
 
@@ -60,11 +61,27 @@ function URL($raw){
     );
 }
 
+$logStore = new \SleekDB\Store("log", '/tmp', [
+    "auto_cache" => true,
+    "cache_lifetime" => 60 * 60 * 24 * 7,
+]);
+// $logStore->insert($article);
+ // $logStore->findAll();
+
+
+if(empty($_SERVER['PATH_INFO'])){
+    header('Content-Type: application/json');
+    echo json_encode($logStore->findAll());
+    exit;
+}
+
+
+$log = [
+    'request' => [],
+    'response' => []
+];
 
 $startTime = microtime(true);
-
-
-
 
 
 $args = [];
@@ -102,6 +119,9 @@ $args['headers'] = array_filter(
     // fn($v, $k) => $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
     ARRAY_FILTER_USE_BOTH
 );
+
+
+$log['request'] = $args;
     
 
 if(preg_match('/\.(ts|jpg|png)$/', $args['url']['raw'])){
@@ -117,22 +137,12 @@ $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
         new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
-            new \League\Flysystem\Adapter\Local('/tmp')
+            new \League\Flysystem\Local\LocalFilesystemAdapter('/tmp')
         ),
         60,
         new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
     )
 ), 'cache');
-
-$stack->push(\GuzzleHttp\Middleware::mapRequest(function (\Psr\Http\Message\RequestInterface $r) {
-    error_log('mapRequest: ' . json_encode([
-        'method' => $r->getMethod(),
-        'url' => $r->getUri()->__toString(),
-        'headers' => array_map(fn($i) => implode(' ', $i), $r->getHeaders()),
-        'body' => $r->getBody()->getContents(),
-    ]));
-    return $r;
-}));
 
 
 $client = new \GuzzleHttp\Client([
@@ -148,10 +158,12 @@ $response = $client->request($args['method'], $args['url']['raw'], [
 
 $content = $response->getBody()->getContents();
 
-error_log('mapResponse: ' . json_encode([
+$log['response'] = [
     'headers' => array_map(fn($i) => implode(' ', $i), $response->getHeaders()),
     'body' => $content,
-]));
+];
+$logStore->insert($log);
+
 
 if(is_string($content)) {
     $content = str_replace(
