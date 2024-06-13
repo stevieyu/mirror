@@ -92,7 +92,7 @@ $args['headers'] = array_filter(
             'Origin' => $args['url']['origin'],
             'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
-            'Referer' => str_replace($_SERVER['HTTP_HOST'], $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? ''),
+            'Referer' => str_replace($_SERVER['HTTP_HOST'], $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
             'Accept-Encoding' => 'gzip, deflate',
         ]
     ), 
@@ -133,7 +133,9 @@ $stack->push(\GuzzleHttp\Middleware::mapRequest(function (\Psr\Http\Message\Requ
 }));
 
 
-$client = new \GuzzleHttp\Client();
+$client = new \GuzzleHttp\Client([
+    // 'proxy' => 'http://47.96.252.3:80'
+]);
 
 $response = $client->request($args['method'], $args['url']['raw'], [
     'headers' => $args['headers'],
