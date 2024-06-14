@@ -19,3 +19,8 @@ git config git-ftp.password "secr3t"
 git ftp init
 git ftp push
 ```
+
+### nosql lib
+
+- [dwgebler/doclite](https://github.com/dwgebler/doclite)
+- [atk4/data](https://github.com/atk4/data)
