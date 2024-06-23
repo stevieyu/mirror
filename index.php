@@ -61,7 +61,7 @@ function URL($raw){
     );
 }
 
-$logStore = new \SleekDB\Store("log", __DIR__.'/tmp', [
+$logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
     // "auto_cache" => true,
     // "cache_lifetime" => 60 * 60 * 24 * 7,
 ]);
@@ -88,10 +88,8 @@ $args = [];
 $args['method'] = $_SERVER['REQUEST_METHOD'];
 $args['body'] = file_get_contents('php://input');
 
-$args['url'] = URL($_GET['_url'] ?? ('https:/'.$_SERVER['REQUEST_URI']));
-if(!$args['url'] && strstr($_SERVER['REQUEST_URI'], '/http')) {
-    $args['url'] = URL(preg_replace('/\/(https?:\/)\/?(.*)/', '$1/$2', $_SERVER['REQUEST_URI']));
-}
+$args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
+$args['url'] = URL($_GET['_url'] ?? preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://'.$args['url']);
 if(!$args['url']) {
     $args['url'] = URL($_COOKIE['_to'].$_SERVER['REQUEST_URI']);
 }
@@ -137,7 +135,7 @@ $stack = \GuzzleHttp\HandlerStack::create();
 $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
     new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
         new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
-            new \League\Flysystem\Local\LocalFilesystemAdapter('/tmp')
+            new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
         ),
         60,
         new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
