@@ -48,6 +48,35 @@ if (!function_exists('getallheaders')){
     }
 }
 
+function fetch($url, $options){
+    $stack = \GuzzleHttp\HandlerStack::create();
+    $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
+        new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
+            new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
+                new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
+            ),
+            60,
+            new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
+        )
+    ), 'cache');
+
+
+    $client = new \GuzzleHttp\Client([
+        // 'proxy' => 'http://47.96.252.3:80'
+    ]);
+
+    $response = $client->request($options['method'], $url, [
+        'headers' => $options['headers'],
+        'body' => $options['body'],
+        'handler' => $stack,
+        'http_errors' => false,
+        // 'stream' => true,
+        'verify' => false,
+    ]);
+
+    return $response;
+}
+
 function URL($raw){
     $url = parse_url($raw);
     if(!$url || empty($url['host']) || !strstr($url['host'], '.') || !count(dns_get_record($url['host'], DNS_A))) return false;
@@ -56,7 +85,9 @@ function URL($raw){
         $url,
         [
             'origin' => preg_replace('/(\w+)\/.*/', '$1', $raw),
-            'raw' => $raw
+            'raw' => $raw,
+            'path' => $url['path'] ?? '/',
+            'query' => $url['query'] ?? '',
         ]
     );
 }
@@ -89,13 +120,20 @@ $args['method'] = $_SERVER['REQUEST_METHOD'];
 $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
-$args['url'] = URL($_GET['_url'] ?? preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://'.$args['url']);
+$args['url'] = URL(preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://'.$args['url']);
 if(!$args['url']) {
+    $refererUrl = URL($_SERVER['HTTP_REFERER'] ?? '');
+    if($refererUrl && $refererUrl['path'] && $refererUrl['path'] != '/') {
+        $args['url'] = URL('https://'.preg_replace('/\/([^\/]+).*?/', '$1', $refererUrl['path']).$_SERVER['REQUEST_URI']);
+    }
+}
+if(!$args['url']){
     $args['url'] = URL($_COOKIE['_to'].$_SERVER['REQUEST_URI']);
 }
 if(!$args['url']) {
     $args['url'] = URL('https://httpbin.org/anything');
 }
+
 if($_COOKIE['_to'] != $args['url']['origin']){
     setcookie('_to', $args['url']['origin'], 0, '/');
 }
@@ -120,47 +158,31 @@ $args['headers'] = array_filter(
 
 
 $log['request'] = $args;
-    
 
-if(preg_match('/\.(ts|jpg|png)$/', $args['url']['raw'])){
+
+$ext = pathinfo($args['url']['path'], PATHINFO_EXTENSION);
+$textExt = 'css|js|json|php|html|m3u8|m3u';
+$otherExt = 'ttf|woff|woff2';
+if($ext && !str_contains($textExt.'|'.$otherExt, $ext)){
     http_response_code(308);
-    header('Location: https:/'.$args['url']['raw']);
+    header('Location: '.$args['url']['raw']);
     exit;
 }
 
 
 // dd($args, getallheaders());
 
-$stack = \GuzzleHttp\HandlerStack::create();
-$stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
-    new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
-        new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
-            new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
-        ),
-        60,
-        new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
-    )
-), 'cache');
-
-
-$client = new \GuzzleHttp\Client([
-    // 'proxy' => 'http://47.96.252.3:80'
-]);
-
-$response = $client->request($args['method'], $args['url']['raw'], [
-    'headers' => $args['headers'],
-    'body' => $args['body'],
-    'handler' => $stack,
-    'http_errors' => false
-]);
+$response = fetch($args['url']['raw'], $args);
 
 $content = $response->getBody()->getContents();
+$headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
 
 $log['response'] = [
-    'headers' => array_map(fn($i) => implode(' ', $i), $response->getHeaders()),
-    'body' => $content,
+    'headers' => $headers,
+    'body' => $ext && str_contains($textExt, $ext) ? $content : '[object]',
 ];
 $logStore->insert($log);
+
 
 
 if(is_string($content)) {
@@ -175,9 +197,9 @@ http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
 
 $only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'Set-Cookie', 'X-Kevinrob-Cache'];
-foreach ($response->getHeaders() as $key => $value) {
+foreach ($headers as $key => $value) {
     if(!in_array($key, $only)) continue;
-    header($key.': '.implode(' ', $value), true);
+    header($key.': '.$value, true);
 }
 
 echo $content;
