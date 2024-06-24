@@ -12,10 +12,10 @@ require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vend
 
 ini_set('max_execution_time', 3);
 
-if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
-    http_response_code(304);
-    exit; 
-}
+// if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
+//     http_response_code(304);
+//     exit; 
+// }
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -244,7 +244,7 @@ if($ext && !str_contains($textExt.'|'.$otherExt, $ext)){
 $response = fetch($args['url']['raw'], $args);
 
 $content = $response->getBody()->getContents();
-$headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
+// $headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
 
 $log['response'] = [
     'headers' => $response->getHeaders(),
@@ -265,16 +265,14 @@ if(is_string($content)) {
 http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
 
+
+foreach ($response->getHeader('Set-Cookie') as $key => $value) {
+    setCookieFromHeader($value);
+}
+
 $only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'X-Kevinrob-Cache'];
-foreach ($response->getHeaders() as $key => $value) {
-    if($key == 'Set-Cookie'){
-        foreach ($value as $v) {
-            setCookieFromHeader($v);
-        }
-        continue;
-    }
-    if(!in_array($key, $only)) continue;
-    foreach ($value as $v) {
+foreach ($only as $key) {
+    foreach ($response->getHeader($key) as $v) {
         header($key.': '.$v);
     }
 }
