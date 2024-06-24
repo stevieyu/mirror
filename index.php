@@ -87,6 +87,8 @@ function setCookieFromHeader(string $cookieHeader): void {
 
     // 初始化Cookie参数
     $cookieArray += [
+        'name' => $cookieArray[0],
+        'value' => $cookieArray[1],
         'expires' => 0,
         'path' => '/',
         'domain' => '',
@@ -94,7 +96,9 @@ function setCookieFromHeader(string $cookieHeader): void {
         'httponly' => false,
         'samesite' => null,
     ];
-
+    unset($cookieArray[0]);
+    unset($cookieArray[1]);
+ 
     // 解析剩余的参数
     foreach ($parts as$part) {
         $part = trim($part);
@@ -112,9 +116,6 @@ function setCookieFromHeader(string $cookieHeader): void {
             $cookieArray['samesite'] = substr($part, 9);
         }
     }
-
-    if(empty($cookieArray['name'])) $cookieArray['name'] = $cookieArray['0'];
-    if(empty($cookieArray['value'])) $cookieArray['value'] = $cookieArray['1'];
 
     // 调用setcookie函数
     setcookie(
