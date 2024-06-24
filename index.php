@@ -76,7 +76,73 @@ function fetch($url, $options){
 
     return $response;
 }
+function setCookieFromHeader(string $cookieHeader): void {
+    // 解析Set-Cookie头部的参数
+    $parts = explode(';',$cookieHeader);
+    $cookieParams = array_shift($parts); // 获取name=value对
+    $cookieArray = match (true) {
+        str_contains($cookieParams, '=') => explode('=',$cookieParams, 2),
+        default => ['', $cookieParams],
+    };
 
+    // 初始化Cookie参数
+    $cookieArray += [
+        'expires' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'httponly' => false,
+        'samesite' => null,
+    ];
+
+    // 解析剩余的参数
+    foreach ($parts as$part) {
+        $part = trim($part);
+        if (str_starts_with($part, 'expires=')) {
+            $cookieArray['expires'] = strtotime(substr($part, 8));
+        } elseif (str_starts_with($part, 'path=')) {
+            $cookieArray['path'] = substr($part, 5);
+        } elseif (str_starts_with($part, 'domain=')) {
+            $cookieArray['domain'] = substr($part, 7);
+        } elseif ($part === 'secure') {
+            $cookieArray['secure'] = true;
+        } elseif ($part === 'httponly') {
+            $cookieArray['httponly'] = true;
+        } elseif (str_starts_with($part, 'samesite=')) {
+            $cookieArray['samesite'] = substr($part, 9);
+        }
+    }
+
+    if(empty($cookieArray['name'])) $cookieArray['name'] = $cookieArray['0'];
+    if(empty($cookieArray['value'])) $cookieArray['value'] = $cookieArray['1'];
+
+    // 调用setcookie函数
+    setcookie(
+        $cookieArray['name'],
+        $cookieArray['value'],
+        $cookieArray['expires'],
+        $cookieArray['path'],
+        $cookieArray['domain'],
+        $cookieArray['secure'],
+        $cookieArray['httponly']
+    );
+
+    // 如果设置了samesite，需要额外调用setcookie
+    if ($cookieArray['samesite'] !== null) {
+        setcookie(
+            $cookieArray['name'],
+            $cookieArray['value'],
+            [
+                'expires' => $cookieArray['expires'],
+                'path' => $cookieArray['path'],
+                'domain' => $cookieArray['domain'],
+                'secure' => $cookieArray['secure'],
+                'httponly' => $cookieArray['httponly'],
+                'samesite' => $cookieArray['samesite'],
+            ]
+        );
+    }
+}
 function URL($raw){
     $url = parse_url($raw);
     if(!$url || empty($url['host']) || !strstr($url['host'], '.') || !count(dns_get_record($url['host'], DNS_A))) return false;
@@ -121,10 +187,12 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = URL(preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://'.$args['url']);
-if(!$args['url']) {
+if(!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
     $refererUrl = URL($_SERVER['HTTP_REFERER'] ?? '');
+    
     if($refererUrl && $refererUrl['path'] && $refererUrl['path'] != '/') {
-        $args['url'] = URL('https://'.preg_replace('/\/([^\/]+).*?/', '$1', $refererUrl['path']).$_SERVER['REQUEST_URI']);
+        $refererUrl = 'https://'.preg_replace('/\/([^\/]+)(?:.*)?/', '$1', $refererUrl['path']).$_SERVER['REQUEST_URI'];
+        $args['url'] = URL($refererUrl);
     }
 }
 if(!$args['url']){
@@ -178,7 +246,7 @@ $content = $response->getBody()->getContents();
 $headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
 
 $log['response'] = [
-    'headers' => $headers,
+    'headers' => $response->getHeaders(),
     'body' => !$ext || str_contains($textExt, $ext) ? $content : '[object]',
 ];
 $logStore->insert($log);
@@ -196,10 +264,18 @@ if(is_string($content)) {
 http_response_code($response->getStatusCode());
 header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 1000, 2));
 
-$only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'Set-Cookie', 'X-Kevinrob-Cache'];
-foreach ($headers as $key => $value) {
+$only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'X-Kevinrob-Cache'];
+foreach ($response->getHeaders() as $key => $value) {
+    if($key == 'Set-Cookie'){
+        foreach ($value as $v) {
+            setCookieFromHeader($v);
+        }
+        continue;
+    }
     if(!in_array($key, $only)) continue;
-    header($key.': '.$value, true);
+    foreach ($value as $v) {
+        header($key.': '.$v);
+    }
 }
 
 echo $content;
