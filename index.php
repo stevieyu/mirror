@@ -179,7 +179,7 @@ $headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
 
 $log['response'] = [
     'headers' => $headers,
-    'body' => $ext && str_contains($textExt, $ext) ? $content : '[object]',
+    'body' => !$ext || str_contains($textExt, $ext) ? $content : '[object]',
 ];
 $logStore->insert($log);
 
