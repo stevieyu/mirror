@@ -255,9 +255,9 @@ $logStore->insert($log);
 
 
 if(is_string($content)) {
-    $content = str_replace(
-        $args['url']['host'], 
-        getallheaders()['Host'], 
+    $content = preg_replace(
+        '/\/'.$args['url']['host'].'/', 
+        '/'.getallheaders()['Host'], 
         $content
     );
 }
