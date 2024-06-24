@@ -18,6 +18,8 @@ git config git-ftp.password "secr3t"
 
 git ftp init
 git ftp push
+
+git ftp push -u username -p password ftp://host.example.com[:<port>][/<remote path>]
 ```
 
 ### nosql lib
