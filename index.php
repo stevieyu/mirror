@@ -74,6 +74,7 @@ function fetch($url, $options){
         'verify' => false,
     ]);
 
+
     return $response;
 }
 function setCookieFromHeader(string $cookieHeader): void {
@@ -260,6 +261,11 @@ if(is_string($content)) {
         '/'.getallheaders()['Host'], 
         $content
     );
+    $content = preg_replace(
+        '/"(\/.*?m?js)/', 
+        '"/'.$args['url']['host'].'$1', 
+        $content
+    );
 }
 
 http_response_code($response->getStatusCode());
@@ -269,6 +275,7 @@ header('Server-Timing: request;dur='. round((microtime(true) - $startTime) * 100
 foreach ($response->getHeader('Set-Cookie') as $key => $value) {
     setCookieFromHeader($value);
 }
+
 
 $only = ['Content-Type', 'Cache-Control', 'Etag', 'Last-Modified', 'X-Kevinrob-Cache'];
 foreach ($only as $key) {
