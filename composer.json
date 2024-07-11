@@ -6,7 +6,8 @@
         "guzzlehttp/guzzle": "^7",
         "kevinrob/guzzle-cache-middleware": "^5",
         "league/flysystem": "^2",
-        "rakibtg/sleekdb": "^2"
+        "rakibtg/sleekdb": "^2",
+        "chrisyue/php-m3u8": "^4.0"
     },
     "require-dev": {
         "symfony/var-dumper": "^5|^6|^7"

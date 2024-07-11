@@ -2,13 +2,13 @@
 
 date_default_timezone_set('PRC');
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 
 require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
-// require !file_exists('./vendor.phar') ? './vendor/autoload.php' : './vendor.phar';
+// require file_exists('./vendor.phar') ? './vendor.phar' : './vendor/autoload.php';
 
 ini_set('max_execution_time', 3);
 
@@ -231,12 +231,25 @@ $log['request'] = $args;
 
 
 $ext = pathinfo($args['url']['path'], PATHINFO_EXTENSION);
-$textExt = 'css|js|json|php|html|m3u8|m3u';
-$otherExt = 'ttf|woff|woff2';
-if($ext && !str_contains($textExt.'|'.$otherExt, $ext)){
+
+$jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3';
+if($ext && str_contains($jumpExts, $ext)) {
     http_response_code(308);
     header('Location: '.$args['url']['raw']);
     exit;
+}
+
+$txtExts = 'css|js|mjs|json|php|html|m3u8|m3u';
+$noTxtExts = 'ttf|woff|woff2';
+
+$isContentTxt = $ext && str_contains($txtExts, $ext);
+
+
+if($args['method'] == 'GET' && $ext && !$isContentTxt && !str_contains($noTxtExts, $ext)) {
+    $response = fetch($args['url']['raw'], array_merge($args, [
+        'method' => 'HEAD',                                             
+    ]));
+    $isContentTxt =  preg_match('/text\/|\/json/', implode($response->getHeader('Content-Type')));
 }
 
 
@@ -249,7 +262,7 @@ $content = $response->getBody()->getContents();
 
 $log['response'] = [
     'headers' => $response->getHeaders(),
-    'body' => !$ext || str_contains($textExt, $ext) ? $content : '[object]',
+    'body' => !$isContentTxt ? $content : '[object]',
 ];
 $logStore->insert($log);
 
