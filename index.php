@@ -78,7 +78,6 @@ function fetch($url, $options){
     return $response;
 }
 function setCookieFromHeader(string $cookieHeader): void {
-    // 解析Set-Cookie头部的参数
     $parts = explode(';',$cookieHeader);
     $cookieParams = array_shift($parts); // 获取name=value对
     $cookieArray = match (true) {
@@ -86,7 +85,6 @@ function setCookieFromHeader(string $cookieHeader): void {
         default => ['', $cookieParams],
     };
 
-    // 初始化Cookie参数
     $cookieArray += [
         'name' => $cookieArray[0],
         'value' => $cookieArray[1],
@@ -100,7 +98,6 @@ function setCookieFromHeader(string $cookieHeader): void {
     unset($cookieArray[0]);
     unset($cookieArray[1]);
  
-    // 解析剩余的参数
     foreach ($parts as$part) {
         $part = trim($part);
         if (str_starts_with($part, 'expires=')) {
@@ -118,7 +115,6 @@ function setCookieFromHeader(string $cookieHeader): void {
         }
     }
 
-    // 调用setcookie函数
     setcookie(
         $cookieArray['name'],
         $cookieArray['value'],
@@ -129,7 +125,6 @@ function setCookieFromHeader(string $cookieHeader): void {
         $cookieArray['httponly']
     );
 
-    // 如果设置了samesite，需要额外调用setcookie
     if ($cookieArray['samesite'] !== null) {
         setcookie(
             $cookieArray['name'],
@@ -156,8 +151,83 @@ function URL($raw){
             'raw' => $raw,
             'path' => $url['path'] ?? '/',
             'query' => $url['query'] ?? '',
+            'ext' => pathinfo($url['path'], PATHINFO_EXTENSION),
+            'dir' => pathinfo($url['path'], PATHINFO_DIRNAME),
+            'filename' => pathinfo($url['path'], PATHINFO_BASENAME),
         ]
     );
+}
+function filterM3U8NotSort($content) {
+    $prev = 0;
+    $isSort = true;
+    $matches = array_values(preg_grep('/\w+.ts/', explode("\n",$content)));
+
+    return array_values(array_filter($matches, function($i,$idx) use (&$prev, &$isSort) {
+        $current = intval(preg_replace('/.*?(\d+).ts/', '$1', $i));
+        $isNotSort = ($current - $prev) != 1;
+
+        if ($idx == 0 || !$isNotSort) {
+            $prev = $current;
+        }
+
+        if ($idx == 1 &&$isNotSort) {
+            $isSort = false;
+        }
+
+        if (!$isSort) {
+            return false;
+        }
+
+        return $idx > 0 &&$isNotSort;
+    }, ARRAY_FILTER_USE_BOTH));
+}
+function generateRegexpFromStrings($array){
+    $baseString =$array[0];
+    $commonString =$baseString;
+
+    foreach ($array as $str) {
+        for ($i = 0;$i < strlen($baseString) &&$i < strlen($str);$i++) {
+            if ($baseString[$i] != $str[$i]) {
+                $commonString[$i] = '*';
+            }
+        }
+    }
+    return preg_replace_callback('/\*+/', function($match) {
+        $len = strlen($match[0]);
+        return '\w'.($len > 1 ? '{'.$len.'}' : '');
+    }, $commonString);
+}
+function removeM3U8Ads($content, $list) {
+    $regex = '/.*?\s'.generateRegexpFromStrings($list).'\s/';
+    $content = preg_replace($regex, '', $content);
+
+    return $content;
+}
+function m3u8Handler($content, $url, $host){
+    // dd($url, $content);
+    if(preg_match('/http[^#$]+\.m3u8/', $content)){
+        $content = preg_replace('{https:\\\/([^#$]+\.m3u8)}', 'https:\/\/'.$host.'$1', $content);
+        return $content;
+    }
+    if($url['ext'] == 'm3u8') {
+        //统一内容路径, 绝对转相对
+        $content = str_replace($url['dir'].'/', '', $content);
+
+        if(preg_match('/\.ts/', $content)){
+            //移除绝对路径
+            $content = preg_replace('/.*?\s\/\S+\s/', '', $content);
+            //ukzy
+            $content = preg_replace('/#EXT-X-K.*?\s(.*\s)*?.*?Y\s/', '', $content);
+
+           $ads = filterM3U8NotSort($content);
+            if(count($ads)) {
+                    $content = removeM3U8Ads($content, $ads);
+            }
+        }
+        // dd($content);
+        return $content;
+    }
+    return $content;
 }
 
 $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
@@ -204,7 +274,7 @@ if(!$args['url']) {
     $args['url'] = URL('https://httpbin.org/anything');
 }
 
-if($_COOKIE['_to'] != $args['url']['origin']){
+if(($_COOKIE['_to'] ?? '') != $args['url']['origin']){
     setcookie('_to', $args['url']['origin'], 0, '/');
 }
 
@@ -230,10 +300,8 @@ $args['headers'] = array_filter(
 $log['request'] = $args;
 
 
-$ext = pathinfo($args['url']['path'], PATHINFO_EXTENSION);
-
 $jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3';
-if($ext && str_contains($jumpExts, $ext)) {
+if($args['url']['ext'] && str_contains($jumpExts, $args['url']['ext'])) {
     http_response_code(308);
     header('Location: '.$args['url']['raw']);
     exit;
@@ -242,10 +310,10 @@ if($ext && str_contains($jumpExts, $ext)) {
 $txtExts = 'css|js|mjs|json|php|html|m3u8|m3u';
 $noTxtExts = 'ttf|woff|woff2';
 
-$isContentTxt = $ext && str_contains($txtExts, $ext);
+$isContentTxt = $args['url']['ext'] && str_contains($txtExts, $args['url']['ext']);
 
 
-if($args['method'] == 'GET' && $ext && !$isContentTxt && !str_contains($noTxtExts, $ext)) {
+if($args['method'] == 'GET' && $args['url']['ext'] && !$isContentTxt && !str_contains($noTxtExts, $args['url']['ext'])) {
     $response = fetch($args['url']['raw'], array_merge($args, [
         'method' => 'HEAD',                                             
     ]));
@@ -268,7 +336,7 @@ $logStore->insert($log);
 
 
 
-if(is_string($content)) {
+if(!$args['url']['ext'] || $isContentTxt) {
     $content = preg_replace(
         '/\/'.$args['url']['host'].'/', 
         '/'.getallheaders()['Host'], 
@@ -279,6 +347,7 @@ if(is_string($content)) {
         '"/'.$args['url']['host'].'$1', 
         $content
     );
+    $content = m3u8Handler($content, $args['url'], $_SERVER['HTTP_HOST']);
 }
 
 http_response_code($response->getStatusCode());
