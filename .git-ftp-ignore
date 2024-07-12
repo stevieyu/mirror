@@ -11,4 +11,5 @@ box.json
 replit.nix
 .replit
 
+.devcontainer
 vendor
