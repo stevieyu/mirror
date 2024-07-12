@@ -12,6 +12,7 @@
         "symfony/var-dumper": "^5|^6|^7"
     },
     "scripts":{
+        "devstart": "apache2ctl start",
         "dev": "php -S 0.0.0.0:8088 index.php",
         "install-box": "composer global require humbug/box",
         "box": [
@@ -23,7 +24,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Stevie\\Mirror\\": "src/"
+            "Mirror\\": "src/"
         }
     }
 }
