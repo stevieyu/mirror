@@ -5,6 +5,7 @@
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/php:8.2",
   "postCreateCommand": {
+    "git-ftp": "sudo curl https://gcore.jsdelivr.net/gh/git-ftp/git-ftp/git-ftp -o /bin/git-ftp && sudo chmod 755 /bin/git-ftp",
     "rewrite": "sudo ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load",
     "www": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
     // "start": "apache2ctl start"
