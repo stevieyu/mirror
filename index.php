@@ -383,7 +383,7 @@ if (!$args['url']['ext'] || $isContentTxt) {
         $content
     );
     if(strstr($content, 'href=') || strstr($content, 'src=')){
-        $content = preg_replace('/(href=|src=)[\'"]https:/', '$1', $content);
+        $content = preg_replace('/(href=[\'"]|src=[\'"])https:/', '$1', $content);
     }
     $content = preg_replace(
         '/"(\/.*?m?js)/',
