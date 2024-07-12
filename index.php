@@ -158,9 +158,9 @@ function URL($raw)
             'raw' => $raw,
             'path' => $url['path'] ?? '/',
             'query' => $url['query'] ?? '',
-            'ext' => pathinfo($url['path'], PATHINFO_EXTENSION),
-            'dir' => pathinfo($url['path'], PATHINFO_DIRNAME),
-            'filename' => pathinfo($url['path'], PATHINFO_BASENAME),
+            'ext' => pathinfo($url['path'] ?? '/', PATHINFO_EXTENSION),
+            'dir' => pathinfo($url['path'] ?? '/', PATHINFO_DIRNAME),
+            'filename' => pathinfo($url['path'] ?? '/', PATHINFO_BASENAME),
         ]
     );
 }

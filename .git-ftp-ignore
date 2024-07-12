@@ -6,7 +6,9 @@
 composer.*
 *.md
 box.json
+.devcontainer
 devcontainer.json
+*/devcontainer.json
 
 .cache
 replit.nix
