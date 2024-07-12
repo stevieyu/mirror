@@ -170,9 +170,19 @@ function filterM3U8NotSort($content)
     $isSort = true;
     $matches = array_values(preg_grep('/\w+.ts/', explode("\n", $content)));
 
-    $ads = array_values(array_filter($matches, function ($i, $idx) use (&$prev, &$isSort) {
+    $dirs_count = [];
+
+    $ads = array_values(array_filter($matches, function ($i, $idx) use (&$prev, &$isSort, &$dirs_count) {
         $current = intval(preg_replace('/.*?(\d+).ts/', '$1', $i));
         $isNotSort = ($current - $prev) != 1;
+
+        $dir = pathinfo($i, PATHINFO_DIRNAME);
+        if($dir && $dir != '.') {
+            if(empty($dirs_count[$dir])){
+                $dirs_count[$dir] = 0;
+            }
+            $dirs_count[$dir] += 1;
+        }
 
         if ($idx == 0 || !$isNotSort) {
             $prev = $current;
@@ -189,10 +199,18 @@ function filterM3U8NotSort($content)
         return $idx > 0 && $isNotSort;
     }, ARRAY_FILTER_USE_BOTH));
 
+
+
     if (count($ads)) {
         $regex = '/.*?\s' . generateRegexpFromStrings($ads) . '\s/';
         $content = preg_replace($regex, '', $content);
+    }else if(count($dirs_count) >= 2){
+        asort($dirs_count);
+        $remove_dir = array_key_first($dirs_count);
+        $remove_dir = preg_replace(['/\//', '/\./'], ['\/', '\.'], $remove_dir);
+        $content = preg_replace('/#EXTINF.*?\s'.$remove_dir.'.*?\s/', '', $content);
     }
+    $content = preg_replace('/(#EXT-X-DIS.*?\s){2,}/', '$1', $content);
 
     return $content;
 }
@@ -208,10 +226,15 @@ function generateRegexpFromStrings($array)
             }
         }
     }
-    return preg_replace_callback('/\*+/', function ($match) {
+    
+    $regexp_str = preg_replace_callback('/\*+/', function ($match) {
         $len = strlen($match[0]);
         return '\w' . ($len > 1 ? '{' . $len . '}' : '');
     }, $commonString);
+
+    $regexp_str = preg_replace(['/\//', '/\./'], ['\/', '\.'], $regexp_str);
+
+    return $regexp_str;
 }
 
 function m3u8Handler($content, $url, $host)
@@ -224,7 +247,7 @@ function m3u8Handler($content, $url, $host)
 
     if ($url['ext'] == 'm3u8') {
         //统一内容路径, 绝对转相对
-        $content = str_replace($url['dir'] . '/', '', $content);
+        $content = preg_replace('/(\s)'.preg_replace(['/\//', '/\./'], ['\/', '\.'], $url['dir']).'\//', '$1', $content);
 
         if (preg_match('/\.ts/', $content)) {
 
@@ -236,10 +259,6 @@ function m3u8Handler($content, $url, $host)
             ], '', $content);
 
             $content = filterM3U8NotSort($content);
-
-            // $content = preg_replace([
-
-            // ], '', $content);
             
         }
         echo $content;
