@@ -305,13 +305,12 @@ if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
         $args['url'] = URL($refererUrl);
     }
 }
-if(!$args['url'] && $_COOKIE['_to'] ?? '') {
-    if (!$args['url']) {
-        $args['url'] = URL($_COOKIE['_to'] . $_SERVER['REQUEST_URI']);
-    }
-    if ($_COOKIE['_to'] != $args['url']['origin']) {
-        setcookie('_to', $args['url']['origin'], 0, '/');
-    }
+$cookie_to = $_COOKIE['_to'] ?? '';
+if(!$args['url'] && $cookie_to) {
+    $args['url'] = URL($cookie_to . $_SERVER['REQUEST_URI']);
+}
+if (!$cookie_to || $cookie_to != $args['url']['origin']) {
+    setcookie('_to', $args['url']['origin'], 0, '/');
 }
 
 if (!$args['url']) {
