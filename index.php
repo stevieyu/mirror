@@ -382,8 +382,8 @@ if (!$args['url']['ext'] || $isContentTxt) {
         '/' . (getallheaders()['Host'] ?? ''),
         $content
     );
-    if(strstr($content, 'href=')){
-        $content = str_replace('https:', '', $content);
+    if(strstr($content, 'href=') || strstr($content, 'src=')){
+        $content = preg_replace('/(href=|src=)[\'"]https:/', '$1', $content);
     }
     $content = preg_replace(
         '/"(\/.*?m?js)/',
