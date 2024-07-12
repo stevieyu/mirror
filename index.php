@@ -75,11 +75,7 @@ function fetch($url, $options)
         // 'stream' => true,
         'verify' => false,
         //http://demo.spiderpy.cn/get/
-        'proxy' => [
-            'http'  => 'http://47.99.149.163:80',
-            'https' => 'http://47.99.149.163:80',
-            'no' => ['.cn', '.edu']
-        ]
+        'proxy' => 'http://177.12.118.160:80'
     ]);
 
 
