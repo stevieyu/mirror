@@ -6,10 +6,10 @@
 composer.*
 *.md
 box.json
+.devcontainer
 
 .cache
 replit.nix
 .replit
 
-.devcontainer
 vendor
