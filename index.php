@@ -261,11 +261,9 @@ function m3u8Handler($content, $url, $host)
             $content = filterM3U8NotSort($content);
             
         }
-        echo $content;
-        dd($url);
         return $content;
     }
-    dd($url);
+
     return $content;
 }
 
