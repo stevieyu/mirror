@@ -11,6 +11,9 @@
     "start": "apache2ctl start"
   },
   "containerEnv": {},
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.composer/vendor/bin"
+  },
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
   // Configure tool-specific properties.
