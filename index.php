@@ -24,7 +24,7 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Max-Age: 86400');
 }
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') == 'OPTIONS') {
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
     }
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     }
     exit;
 }
-if (preg_match('/ico$/', $_SERVER['REQUEST_URI'])) {
+if (preg_match('/ico$/', $_SERVER['REQUEST_URI'] ?? '')) {
     exit;
 }
 
@@ -59,15 +59,13 @@ function fetch($url, $options)
             new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
                 new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
             ),
-            60 * 60,
+            60,
             new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
         )
     ), 'cache');
 
 
-    $client = new \GuzzleHttp\Client([
-        // 'proxy' => 'http://47.96.252.3:80'
-    ]);
+    $client = new \GuzzleHttp\Client();
 
     $response = $client->request($options['method'], $url, [
         'headers' => $options['headers'],
@@ -76,6 +74,12 @@ function fetch($url, $options)
         'http_errors' => false,
         // 'stream' => true,
         'verify' => false,
+        //http://demo.spiderpy.cn/get/
+        'proxy' => [
+            'http'  => 'http://47.99.149.163:80',
+            'https' => 'http://47.99.149.163:80',
+            'no' => ['.cn', '.edu']
+        ]
     ]);
 
 
@@ -275,7 +279,7 @@ $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
 // $logStore->findAll();
 
 
-if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'])) {
+if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '')) {
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
@@ -291,7 +295,7 @@ $startTime = microtime(true);
 
 
 $args = [];
-$args['method'] = $_SERVER['REQUEST_METHOD'];
+$args['method'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
@@ -309,7 +313,7 @@ $cookie_to = $_COOKIE['_to'] ?? '';
 if(!$args['url'] && $cookie_to) {
     $args['url'] = URL($cookie_to . $_SERVER['REQUEST_URI']);
 }
-if (!$cookie_to || $cookie_to != $args['url']['origin']) {
+if ($args['url'] && (!$cookie_to || $cookie_to != $args['url']['origin'])) {
     setcookie('_to', $args['url']['origin'], 0, '/');
 }
 
@@ -327,7 +331,7 @@ $args['headers'] = array_filter(
             'Origin' => $args['url']['origin'],
             'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
-            'Referer' => str_replace($_SERVER['HTTP_HOST'], $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
+            'Referer' => str_replace($_SERVER['HTTP_HOST'] ?? '', $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
             'Accept-Encoding' => 'gzip, deflate',
         ]
     ),
@@ -379,7 +383,7 @@ $logStore->insert($log);
 if (!$args['url']['ext'] || $isContentTxt) {
     $content = preg_replace(
         '/\/' . $args['url']['host'] . '/',
-        '/' . getallheaders()['Host'],
+        '/' . (getallheaders()['Host'] ?? ''),
         $content
     );
     $content = preg_replace(
@@ -387,7 +391,7 @@ if (!$args['url']['ext'] || $isContentTxt) {
         '"/' . $args['url']['host'] . '$1',
         $content
     );
-    $content = m3u8Handler($content, $args['url'], $_SERVER['HTTP_HOST']);
+    $content = m3u8Handler($content, $args['url'], $_SERVER['HTTP_HOST'] ?? '');
 }
 
 http_response_code($response->getStatusCode());
