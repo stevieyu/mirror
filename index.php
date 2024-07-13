@@ -342,7 +342,7 @@ $log['request'] = $args;
 
 $jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3|ttf|woff|woff2';
 if ($args['url']['ext'] && str_contains($jumpExts, $args['url']['ext'])) {
-    http_response_code(308);
+    http_response_code(301);
     header('Location: ' . $args['url']['raw']);
     exit;
 }
