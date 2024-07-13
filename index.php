@@ -385,11 +385,13 @@ if (!$args['url']['ext'] || $isContentTxt) {
     if(strstr($content, 'href=') || strstr($content, 'src=')){
         $content = preg_replace('/(href=[\'"]|src=[\'"])https:/', '$1', $content);
     }
-    // $content = preg_replace(
-    //     '/"(\/.*?m?js)/',
-    //     '"/' . $args['url']['host'] . '$1',
-    //     $content
-    // );
+    if(preg_match('/\sexport\s/', $content)){
+        $content = preg_replace(
+            '/"(\/.*?m?js)/',
+            '"/' . $args['url']['host'] . '$1',
+            $content
+        );
+    }
     $content = m3u8Handler($content, $args['url'], $_SERVER['HTTP_HOST'] ?? '');
 }
 
