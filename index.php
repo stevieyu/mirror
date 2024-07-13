@@ -377,14 +377,14 @@ $logStore->insert($log);
 
 
 if (!$args['url']['ext'] || $isContentTxt) {
+    if(strstr($content, 'href=') || strstr($content, 'src=')){
+        $content = preg_replace('/((?:href|src)=[\'"])https?:\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '', $content);
+    }
     $content = preg_replace(
         '/\/' . $args['url']['host'] . '/',
         '/' . (getallheaders()['Host'] ?? ''),
         $content
     );
-    if(strstr($content, 'href=') || strstr($content, 'src=')){
-        $content = preg_replace('/((?:href|src)=[\'"])https?:\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '', $content);
-    }
     if(preg_match('/\sexport\s/', $content)){
         $content = preg_replace(
             '/"(\/.*?m?js)/',
