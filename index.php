@@ -340,7 +340,7 @@ $args['headers'] = array_filter(
 $log['request'] = $args;
 
 
-$jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3|ttf|woff|woff2';
+$jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3';
 if ($args['url']['ext'] && str_contains($jumpExts, $args['url']['ext'])) {
     http_response_code(301);
     header('Location: ' . $args['url']['raw']);
@@ -385,7 +385,7 @@ if (!$args['url']['ext'] || $isContentTxt) {
         '/' . (getallheaders()['Host'] ?? ''),
         $content
     );
-    if(preg_match('/\sexport\s/', $content)){
+    if(preg_match('/export\s/', $content)){
         $content = preg_replace(
             '/"(\/.*?m?js)/',
             '"/' . $args['url']['host'] . '$1',
