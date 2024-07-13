@@ -378,7 +378,7 @@ $logStore->insert($log);
 
 if (!$args['url']['ext'] || $isContentTxt) {
     if(strstr($content, 'href=') || strstr($content, 'src=')){
-        $content = preg_replace('/((?:href|src)=[\'"])https?:\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '', $content);
+        $content = preg_replace('/((?:href|src)=[\'"])https?:\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '$1', $content);
     }
     $content = preg_replace(
         '/\/' . $args['url']['host'] . '/',
