@@ -31,11 +31,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
 
-    - name: Install box
+    - name: build phar
       run: |
         export PATH=$PATH:/home/runner/.composer/vendor/bin
         composer run install-box
         composer run box
+
+    - name: deploy
+      run: |
         sudo curl https://fastly.jsdelivr.net/gh/git-ftp/git-ftp/git-ftp -o /bin/git-ftp && sudo chmod 755 /bin/git-ftp
         ls -al
+        git-ftp -h | grep url
 
