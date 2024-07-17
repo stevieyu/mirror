@@ -18,8 +18,7 @@
         "box": [
             "composer install --no-dev",
             "composer dump-autoload --classmap-authoritative --no-dev --ansi",
-            "box compile",
-            "composer install"
+            "box compile"
         ]
     },
     "autoload": {

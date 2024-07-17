@@ -8,4 +8,4 @@ check_task:
     populate_script:
       - composer global require humbug/box
       - export PATH=$PATH:$COMPOSER_HOME/vendor/bin
-      - composer install --no-dev
+      - composer run box
