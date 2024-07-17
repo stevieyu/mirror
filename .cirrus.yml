@@ -4,6 +4,7 @@ container:
 check_task:
   vendor_cache:
     folder: vendor
-    fingerprint_script: cat composer.lock
+    fingerprint_script: md5sum composer.lock
     populate_script:
-      - composer install
+      - composer install-box
+      - composer box
