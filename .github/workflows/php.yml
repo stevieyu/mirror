@@ -32,7 +32,7 @@ jobs:
     - name: Install box
       run: |
         composer global require humbug/box
-        export PATH=$PATH:$COMPOSER_HOME/vendor/bin
+        export PATH=$PATH:/home/runner/.composer/vendor/bin
         box -h
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
