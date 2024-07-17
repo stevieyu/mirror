@@ -1,10 +1,10 @@
 container:
-  image: mcr.microsoft.com/devcontainers/php:8.2
+  image: composer
 
 check_task:
   vendor_cache:
     folder: vendor
     fingerprint_script: md5sum composer.lock
     populate_script:
-      - composer install-box
-      - composer box
+      - curl https://github.com/box-project/box/releases/download/4.6.2/box.phar -O ../box.phar
+      - composer install --no-dev
