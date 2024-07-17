@@ -7,7 +7,8 @@
   "postCreateCommand": {
     "git-ftp": "sudo curl https://fastly.jsdelivr.net/gh/git-ftp/git-ftp/git-ftp -o /bin/git-ftp && sudo chmod 755 /bin/git-ftp",
     "rewrite": "sudo ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load",
-    "www": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
+    "www": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html",
+    "mirror": "composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/"
   },
   "postStartCommand": {
     "start": "apache2ctl start"
