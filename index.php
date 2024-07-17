@@ -59,7 +59,7 @@ function fetch($url, $options)
             new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
                 new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
             ),
-            60,
+            60 * 60,
             new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
         )
     ), 'cache');
@@ -378,7 +378,7 @@ $logStore->insert($log);
 
 if (!$args['url']['ext'] || $isContentTxt) {
     if(strstr($content, 'href=') || strstr($content, 'src=')){
-        $content = preg_replace('/((?:href|src)=[\'"])https?:\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '$1', $content);
+        $content = preg_replace('/((?:href|src)=[\'"])(?:https?:)?\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '$1', $content);
     }
     $content = preg_replace(
         '/\/' . $args['url']['host'] . '/',
