@@ -31,9 +31,10 @@ jobs:
 
     - name: Install box
       run: |
-        composer global require humbug/box
         export PATH=$PATH:/home/runner/.composer/vendor/bin
-        box -h
+        composer run install-box
+        composer run box
+        sudo curl https://fastly.jsdelivr.net/gh/git-ftp/git-ftp/git-ftp -o /bin/git-ftp && sudo chmod 755 /bin/git-ftp
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
