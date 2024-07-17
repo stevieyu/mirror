@@ -9,7 +9,7 @@
     "rewrite": "sudo ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load",
     "www": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
   },
-  "postAttachCommand": {
+  "postStartCommand": {
     "start": "apache2ctl start"
   },
   "containerEnv": {},
