@@ -2,10 +2,15 @@ container:
   image: composer
 
 check_task:
+  composer_cache:
+    folder: /tmp
+    populate_script:
+      - composer global require humbug/box
   vendor_cache:
     folder: vendor
     fingerprint_script: md5sum composer.lock
     populate_script:
-      - composer global require humbug/box
-      - export PATH=$PATH:$COMPOSER_HOME/vendor/bin
-      - composer run box
+      - composer install
+      # - export PATH=$PATH:$COMPOSER_HOME/vendor/bin
+      # - composer run box
+
