@@ -1,10 +1,10 @@
 modules = ["php-8.2"]
-run = "php -S 0.0.0.0:7878 index.php"
+run = "php -S 0.0.0.0:8080 index.php"
 hidden = []
 
 [nix]
 channel = "unstable"
 
 [[ports]]
-localPort = 7878
+localPort = 8080
 externalPort = 80
