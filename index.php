@@ -247,7 +247,7 @@ function m3u8Handler($content, $url, $host)
 
     if ($url['ext'] == 'm3u8') {
         //统一内容路径, 绝对转相对
-        $content = preg_replace('/(\s)' . preg_replace(['/\//', '/\./'], ['\/', '\.'], $url['dir']) . '\//', '$1', $content);
+        $content = preg_replace('/(\s)' . preg_replace('/([./])/', '\$1', $url['dir']) . '\//', '$1', $content);
 
         if (preg_match('/\.ts/', $content)) {
 
