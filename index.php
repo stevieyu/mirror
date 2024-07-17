@@ -177,8 +177,8 @@ function filterM3U8NotSort($content)
         $isNotSort = ($current - $prev) != 1;
 
         $dir = pathinfo($i, PATHINFO_DIRNAME);
-        if($dir && $dir != '.') {
-            if(empty($dirs_count[$dir])){
+        if ($dir && $dir != '.') {
+            if (empty($dirs_count[$dir])) {
                 $dirs_count[$dir] = 0;
             }
             $dirs_count[$dir] += 1;
@@ -204,11 +204,11 @@ function filterM3U8NotSort($content)
     if (count($ads)) {
         $regex = '/.*?\s' . generateRegexpFromStrings($ads) . '\s/';
         $content = preg_replace($regex, '', $content);
-    }else if(count($dirs_count) >= 2){
+    } else if (count($dirs_count) >= 2) {
         asort($dirs_count);
         $remove_dir = array_key_first($dirs_count);
         $remove_dir = preg_replace(['/\//', '/\./'], ['\/', '\.'], $remove_dir);
-        $content = preg_replace('/#EXTINF.*?\s'.$remove_dir.'.*?\s/', '', $content);
+        $content = preg_replace('/#EXTINF.*?\s' . $remove_dir . '.*?\s/', '', $content);
     }
     $content = preg_replace('/(#EXT-X-DIS.*?\s){2,}/', '$1', $content);
 
@@ -226,7 +226,7 @@ function generateRegexpFromStrings($array)
             }
         }
     }
-    
+
     $regexp_str = preg_replace_callback('/\*+/', function ($match) {
         $len = strlen($match[0]);
         return '\w' . ($len > 1 ? '{' . $len . '}' : '');
@@ -247,7 +247,7 @@ function m3u8Handler($content, $url, $host)
 
     if ($url['ext'] == 'm3u8') {
         //统一内容路径, 绝对转相对
-        $content = preg_replace('/(\s)'.preg_replace(['/\//', '/\./'], ['\/', '\.'], $url['dir']).'\//', '$1', $content);
+        $content = preg_replace('/(\s)' . preg_replace(['/\//', '/\./'], ['\/', '\.'], $url['dir']) . '\//', '$1', $content);
 
         if (preg_match('/\.ts/', $content)) {
 
@@ -259,7 +259,6 @@ function m3u8Handler($content, $url, $host)
             ], '', $content);
 
             $content = filterM3U8NotSort($content);
-            
         }
         return $content;
     }
@@ -306,7 +305,7 @@ if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
     }
 }
 $cookie_to = $_COOKIE['_to'] ?? '';
-if(!$args['url'] && $cookie_to) {
+if (!$args['url'] && $cookie_to) {
     $args['url'] = URL($cookie_to . $_SERVER['REQUEST_URI']);
 }
 if ($args['url'] && (!$cookie_to || $cookie_to != $args['url']['origin'])) {
@@ -377,15 +376,15 @@ $logStore->insert($log);
 
 
 if (!$args['url']['ext'] || $isContentTxt) {
-    if(strstr($content, 'href=') || strstr($content, 'src=')){
-        $content = preg_replace('/((?:href|src)=[\'"])(?:https?:)?\/\/'.str_replace('.', '\.', $args['url']['host']).'/', '$1', $content);
+    if (strstr($content, 'href=') || strstr($content, 'src=')) {
+        $content = preg_replace('/((?:href|src)=[\'"])(?:https?:)?\/\/' . str_replace('.', '\.', $args['url']['host']) . '/', '$1', $content);
     }
     $content = preg_replace(
         '/\/' . $args['url']['host'] . '/',
         '/' . (getallheaders()['Host'] ?? ''),
         $content
     );
-    if(preg_match('/export\s/', $content)){
+    if (preg_match('/export\s/', $content)) {
         $content = preg_replace(
             '/"(\/.*?m?js)/',
             '"/' . $args['url']['host'] . '$1',
