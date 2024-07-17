@@ -1,0 +1,9 @@
+container:
+  image: mcr.microsoft.com/devcontainers/php:8.2
+
+check_task:
+  vendor_cache:
+    folder: vendor
+    fingerprint_script: cat composer.lock
+    populate_script:
+      - composer install
