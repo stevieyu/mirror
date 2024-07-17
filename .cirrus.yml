@@ -6,5 +6,6 @@ check_task:
     folder: vendor
     fingerprint_script: md5sum composer.lock
     populate_script:
-      - curl https://github.com/box-project/box/releases/download/4.6.2/box.phar -O ../box.phar
+      - composer global require humbug/box
+      - export PATH=$PATH:$COMPOSER_HOME/vendor/bin
       - composer install --no-dev
