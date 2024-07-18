@@ -53,6 +53,7 @@ if (!function_exists('getallheaders')) {
 
 function fetch($url, $options)
 {
+    $ttl = preg_match('/\.m3u8$/', $url) ? 60 * 60 * 24 * 365 : 60 * 60 ;
     $stack = \GuzzleHttp\HandlerStack::create();
     $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
         new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
@@ -296,7 +297,7 @@ $args['body'] = file_get_contents('php://input');
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
 if(preg_match('/\.m3u8$/', $args['url'])){
-    $args['url'] = str_replace('https:/', 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run', $args['url']);
+    $args['url'] = str_replace('https:/', 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run', $args['url']);
 }
 $args['url'] = URL($args['url']);
 if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
