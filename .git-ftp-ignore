@@ -13,6 +13,6 @@ devcontainer.json
 .cache
 replit.nix
 .replit
-.github
+.github/*
 
 vendor
