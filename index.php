@@ -295,6 +295,9 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
+// if(preg_match('/\.m3u8$/', $args['url'])){
+//     $args['url'] = str_replace('https:/', 'https://xxx.cn', $args['url']);
+// }
 $args['url'] = URL($args['url']);
 if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
     $refererUrl = URL($_SERVER['HTTP_REFERER'] ?? '');
