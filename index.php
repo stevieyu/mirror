@@ -281,12 +281,15 @@ if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '')) {
     exit;
 }
 
+// $m3u8_proxy = '';
+$m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
+// $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
+
 
 $log = [
     'request' => [],
     'response' => []
 ];
-
 $startTime = microtime(true);
 
 
@@ -296,8 +299,8 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
-if(preg_match('/\.m3u8$/', $args['url'])){
-    $args['url'] = str_replace('https:/', 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run', $args['url']);
+if(preg_match('/\.m3u8$/', $args['url']) && $m3u8_proxy){
+    $args['url'] = str_replace('https:/', $m3u8_proxy, $args['url']);
 }
 $args['url'] = URL($args['url']);
 if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
