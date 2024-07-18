@@ -375,6 +375,7 @@ $log['response'] = [
     'headers' => $response->getHeaders(),
     'body' => !$isContentTxt ? $content : '[object]',
 ];
+$log['ms'] = round((microtime(true) - $startTime), 2);
 $logStore->insert($log);
 
 
