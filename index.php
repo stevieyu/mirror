@@ -360,7 +360,7 @@ if ($args['method'] == 'GET' && $args['url']['ext'] && !$isContentTxt && !str_co
     $response = fetch($args['url']['raw'], array_merge($args, [
         'method' => 'HEAD',
     ]));
-    $isContentTxt =  preg_match('/text\/|\/json|\/javascript/', implode($response->getHeader('Content-Type')));
+    $isContentTxt =  preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
 }
 
 
