@@ -19,11 +19,11 @@ ini_set('max_execution_time', 3);
 //     exit; 
 // }
 
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Max-Age: 86400');
-}
+
+header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN'] ?? '*');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400');
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') == 'OPTIONS') {
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -57,7 +57,7 @@ function fetch($url, $options)
     $ttl = 60 * 60;
 
     // $m3u8_proxy = '';
-    $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
+    $m3u8_proxy = 'http://proxy-mdjhpniduu.cn-hongkong.fcapp.run/proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
     // $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
     if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
         $url = str_replace('https:/', $m3u8_proxy, $url);
