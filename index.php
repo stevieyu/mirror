@@ -337,7 +337,7 @@ $args['headers'] = array_filter(
         getallheaders(),
         [
             'Origin' => $args['url']['origin'],
-            // 'Host' => $args['url']['host'],
+            'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
             'Referer' => str_replace($_SERVER['HTTP_HOST'] ?? '', $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
             'Accept-Encoding' => 'gzip, deflate',
@@ -347,6 +347,7 @@ $args['headers'] = array_filter(
     // fn($v, $k) => $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
     ARRAY_FILTER_USE_BOTH
 );
+unset($args['headers']['Host']);
 
 
 $log['request'] = $args;
