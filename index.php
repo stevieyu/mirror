@@ -383,6 +383,7 @@ $content = $response->getBody()->getContents();
 // $headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
 
 $log['response'] = [
+    'status' => $response->getStatusCode(),
     'headers' => $response->getHeaders(),
     'body' => $isContentTxt ? $content : '[object]',
 ];
