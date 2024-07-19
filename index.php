@@ -261,7 +261,7 @@ function m3u8Handler($content, $url, $host)
 
             $content = filterM3U8NotSort($content);
 
-            $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'$2', $content);
+            // $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'$2', $content);
         }
         return $content;
     }
