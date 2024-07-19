@@ -260,6 +260,8 @@ function m3u8Handler($content, $url, $host)
             ], '', $content);
 
             $content = filterM3U8NotSort($content);
+
+            $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'$2', $content);
         }
         return $content;
     }
@@ -299,7 +301,7 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
-if(preg_match('/\.m3u8$/', $args['url']) && $m3u8_proxy){
+if(preg_match('/\.m3u8$/', $args['url']) && !empty($m3u8_proxy)){
     $args['url'] = str_replace('https:/', $m3u8_proxy, $args['url']);
 }
 $args['url'] = URL($args['url']);
