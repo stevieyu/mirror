@@ -20,7 +20,7 @@ ini_set('max_execution_time', 3);
 // }
 
 
-header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN'] ?? '*');
+header('Access-Control-Allow-Origin: '.($_SERVER['HTTP_ORIGIN'] ?? '*'));
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Max-Age: 86400');
 
