@@ -284,8 +284,8 @@ if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '')) {
 }
 
 // $m3u8_proxy = '';
-// $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
-$m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
+$m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
+// $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
 
 
 $log = [
