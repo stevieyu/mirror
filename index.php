@@ -57,8 +57,8 @@ function fetch($url, $options)
     $ttl = 60 * 60;
 
     // $m3u8_proxy = '';
-    $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
-    // $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
+    // $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
+    $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
     if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
         $url = str_replace('https:/', $m3u8_proxy, $url);
         $ttl = 60 * 60 * 24 * 365;
