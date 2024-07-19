@@ -53,14 +53,24 @@ if (!function_exists('getallheaders')) {
 
 function fetch($url, $options)
 {
-    $ttl = preg_match('/\.m3u8$/', $url) ? 60 * 60 * 24 * 365 : 60 * 60 ;
+
+    $ttl = 60 * 60;
+
+    // $m3u8_proxy = '';
+    $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
+    // $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
+    if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
+        $url = str_replace('https:/', $m3u8_proxy, $url);
+        $ttl = 60 * 60 * 24 * 365;
+    }
+
     $stack = \GuzzleHttp\HandlerStack::create();
     $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
         new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
             new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
                 new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
             ),
-            60 * 60,
+            $ttl,
             new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
         )
     ), 'cache');
@@ -261,7 +271,7 @@ function m3u8Handler($content, $url, $host)
 
             $content = filterM3U8NotSort($content);
 
-            // $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'$2', $content);
+            $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'$2', $content);
         }
         return $content;
     }
@@ -283,9 +293,6 @@ if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '')) {
     exit;
 }
 
-// $m3u8_proxy = '';
-$m3u8_proxy = 'https://proxy-mdjhpniduu.cn-hongkong.fcapp.run';
-// $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
 
 
 $log = [
@@ -301,9 +308,6 @@ $args['body'] = file_get_contents('php://input');
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
-if(preg_match('/\.m3u8$/', $args['url']) && !empty($m3u8_proxy)){
-    $args['url'] = str_replace('https:/', $m3u8_proxy, $args['url']);
-}
 $args['url'] = URL($args['url']);
 if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
     $refererUrl = URL($_SERVER['HTTP_REFERER'] ?? '');
