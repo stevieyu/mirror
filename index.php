@@ -58,7 +58,7 @@ function fetch($url, $options)
 
     // $m3u8_proxy = '';
     $m3u8_proxy = 'http://proxy-mdjhpniduu.cn-hongkong.fcapp.run/proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
-    // $m3u8_proxy = 'https://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
+    // $m3u8_proxy = 'http://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
     if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
         $url = str_replace('https:/', $m3u8_proxy, $url);
         $ttl = 60 * 60 * 24 * 365;
@@ -337,7 +337,7 @@ $args['headers'] = array_filter(
         getallheaders(),
         [
             'Origin' => $args['url']['origin'],
-            'Host' => $args['url']['host'],
+            // 'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
             'Referer' => str_replace($_SERVER['HTTP_HOST'] ?? '', $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
             'Accept-Encoding' => 'gzip, deflate',
