@@ -336,7 +336,7 @@ $args['headers'] = array_filter(
     array_merge(
         getallheaders(),
         [
-            'Origin' => $args['url']['origin'],
+            // 'Origin' => $args['url']['origin'],
             // 'Host' => $args['url']['host'],
             'Cookie' => preg_replace('/_to=[^&]+&?/', '', $_SERVER['HTTP_COOKIE'] ?? ''),
             'Referer' => str_replace($_SERVER['HTTP_HOST'] ?? '', $args['url']['host'], $_SERVER['HTTP_REFERER'] ?? $args['url']['origin']),
@@ -348,6 +348,7 @@ $args['headers'] = array_filter(
     ARRAY_FILTER_USE_BOTH
 );
 unset($args['headers']['Host']);
+unset($args['headers']['Origin']);
 
 
 $log['request'] = $args;
