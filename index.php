@@ -317,10 +317,10 @@ if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
 }
 $cookie_to = $_COOKIE['_to'] ?? '';
 if (!$args['url'] && $cookie_to) {
-    $args['url'] = URL($cookie_to . $_SERVER['REQUEST_URI']);
+    $args['url'] = URL('https://'. $cookie_to . $_SERVER['REQUEST_URI']);
 }
-if ($args['url'] && (!$cookie_to || $cookie_to != $args['url']['origin'])) {
-    setcookie('_to', $args['url']['origin'], 0, '/');
+if ($args['url'] && (!$cookie_to || $cookie_to != $args['url']['host'])) {
+    setcookie('_to', $args['url']['host'], 0, '/');
 }
 
 if (!$args['url']) {
