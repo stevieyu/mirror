@@ -285,7 +285,7 @@ $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
 // $logStore->findAll();
 
 
-if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !strstr($_SERVER['REQUEST_URI'] ?? '', $_COOKIE['_to'] ?? '')) {
+if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !str_contains($_SERVER['HTTP_REFERER'] ?? '', $_COOKIE['_to'] ?? '')) {
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
@@ -342,7 +342,7 @@ $args['headers'] = array_filter(
         ]
     ),
     fn ($v, $k) => $v,
-    // fn($v, $k) => $v && strstr('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
+    // fn($v, $k) => $v && str_contains('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
     ARRAY_FILTER_USE_BOTH
 );
 unset($args['headers']['Host']);
@@ -391,7 +391,7 @@ $logStore->insert($log);
 
 
 if (!$args['url']['ext'] || $isContentTxt) {
-    if (strstr($content, 'href=') || strstr($content, 'src=')) {
+    if (str_contains($content, 'href=') || str_contains($content, 'src=')) {
         $content = preg_replace('/((?:href|src)=[\'"])(?:https?:)?\/\/' . str_replace('.', '\.', $args['url']['host']) . '/', '$1', $content);
     }
     $content = preg_replace(
