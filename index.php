@@ -285,7 +285,7 @@ $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
 // $logStore->findAll();
 
 
-if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !strstr($_COOKIE['_to'] ?? '', $_SERVER['REQUEST_URI'] ?? '')) {
+if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !strstr($_SERVER['REQUEST_URI'] ?? '', $_COOKIE['_to'] ?? '')) {
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
