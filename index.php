@@ -14,11 +14,6 @@ require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vend
 
 ini_set('max_execution_time', 3);
 
-// if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
-//     http_response_code(304);
-//     exit; 
-// }
-
 
 header('Access-Control-Allow-Origin: '.($_SERVER['HTTP_ORIGIN'] ?? '*'));
 header('Access-Control-Allow-Credentials: true');
@@ -36,7 +31,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') == 'OPTIONS') {
 if (preg_match('/ico$/', $_SERVER['REQUEST_URI'] ?? '')) {
     exit;
 }
-
+if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
+    http_response_code(304);
+    exit; 
+}
 
 if (!function_exists('getallheaders')) {
     function getallheaders()
@@ -62,7 +60,7 @@ function fetch($url, $options)
     if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
         $url = str_replace('https:/', $m3u8_proxy, $url);
         $ttl = 60 * 60 * 24 * 365;
-    }
+    } 
 
     $stack = \GuzzleHttp\HandlerStack::create();
     $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
@@ -287,7 +285,7 @@ $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
 // $logStore->findAll();
 
 
-if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '')) {
+if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !strstr($_COOKIE['_to'] ?? '', $_SERVER['REQUEST_URI'] ?? '')) {
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
