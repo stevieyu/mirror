@@ -6,11 +6,12 @@ date_default_timezone_set('PRC');
 
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
+error_reporting(E_ERROR | E_PARSE);
 
 
 require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vendor.phar';
 // require file_exists('./vendor.phar') ? './vendor.phar' : './vendor/autoload.php';
+
 
 ini_set('max_execution_time', 3);
 
@@ -265,6 +266,8 @@ function m3u8Handler($content, $url, $host)
                 '/.*?\s\/\S+\s/',
                 //带key的无分片块
                 '/(#EXT-X-DIS.*?\s#EXT-X-KEY.*?\s){2,}/',
+                // 带3.33时长片段的广告 https://vip.ffzy-video.com/20240808/272_7a614fd0/index.m3u8
+                '/#EXT-X-D((?!X-D).)+3\.333333.*?UITY\s/s',
             ], '', $content);
 
             $content = filterM3U8NotSort($content);
@@ -283,7 +286,7 @@ $logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
 ]);
 // $logStore->insert($article);
 // $logStore->findAll();
-
+$logStore->deleteById($logStore->findAll(['_id' => 'asc'], 1)[0]['_id']);
 
 if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !str_contains($_SERVER['HTTP_REFERER'] ?? '', $_COOKIE['_to'] ?? '')) {
     header('Content-Type: application/json');
