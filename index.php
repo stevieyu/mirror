@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 date_default_timezone_set('PRC');
 
@@ -266,9 +264,10 @@ function m3u8Handler($content, $url, $host)
                 '/.*?\s\/\S+\s/',
                 //带key的无分片块
                 '/(#EXT-X-DIS.*?\s#EXT-X-KEY.*?\s){2,}/',
-                // 带3.33时长片段的广告 https://vip.ffzy-video.com/20240808/272_7a614fd0/index.m3u8
-                '/#EXT-X-D((?!X-D).)+3\.333333.*?UITY\s/s',
             ], '', $content);
+
+            // 带3.33时长片段的广告 https://vip.ffzy-video.com/20240808/272_7a614fd0/index.m3u8
+            $content = preg_replace('/#EXT-X-D((?!#EXT-X-D).)+3\.333333.*?UITY\s/s', '', $content) ?? $content;
 
             $content = filterM3U8NotSort($content);
 
