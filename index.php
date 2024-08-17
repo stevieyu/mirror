@@ -48,6 +48,24 @@ if (!function_exists('getallheaders')) {
     }
 }
 
+class CustomCacheStrategy extends \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy
+{
+    /**
+     * @param RequestInterface  $request
+     * @param ResponseInterface $response
+     * @return bool
+     * @throws \InvalidArgumentException
+     */
+    public function cache(\Psr\Http\Message\RequestInterface $request, \Psr\Http\Message\ResponseInterface $response)
+    {
+
+        if ($response->getStatusCode() >= 300) {
+            return false;
+        }
+        return parent::cache($request, $response);
+    }
+}
+
 function fetch($url, $options)
 {
 
@@ -61,11 +79,14 @@ function fetch($url, $options)
         $ttl = 60 * 60 * 24 * 365;
     } 
 
+    // $cache_dir = sys_get_temp_dir();
+    $cache_dir = __DIR__.'/guzzle-cache';
+
     $stack = \GuzzleHttp\HandlerStack::create();
     $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
-        new \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy(
+        new CustomCacheStrategy(
             new \Kevinrob\GuzzleCache\Storage\FlysystemStorage(
-                new \League\Flysystem\Local\LocalFilesystemAdapter(sys_get_temp_dir())
+                new \League\Flysystem\Local\LocalFilesystemAdapter($cache_dir)
             ),
             $ttl,
             new \Kevinrob\GuzzleCache\KeyValueHttpHeader(['Authorization'])
