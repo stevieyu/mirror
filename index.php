@@ -263,7 +263,7 @@ function m3u8Handler($content, $url, $host)
                 //移除绝对路径
                 '/.*?\s\/\S+\s/',
                 //带key的无分片块
-                '/(#EXT-X-DIS.*?\s#EXT-X-KEY.*?\s){2,}/',
+                '/(#EXT-X-DIS.*?\s(#EXT-X-KEY.*?\s)+){2,}/',
             ], '', $content);
 
             // 带3.33时长片段的广告 https://vip.ffzy-video.com/20240808/272_7a614fd0/index.m3u8
@@ -271,7 +271,9 @@ function m3u8Handler($content, $url, $host)
 
             $content = filterM3U8NotSort($content);
 
+            //相对转绝对
             $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'/$2', $content);
+            $content = preg_replace('/(\w+\.key)/', $url['origin'].$url['dir'].'/$1', $content);
         }
         return $content;
     }
