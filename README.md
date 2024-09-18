@@ -26,3 +26,5 @@ git ftp push -u username -p password ftp://host.example.com[:<port>][/<remote pa
 
 - [dwgebler/doclite](https://github.com/dwgebler/doclite)
 - [atk4/data](https://github.com/atk4/data)
+- [gabordemooij/redbean](https://github.com/gabordemooij/redbean)
+- [scrawler-labs/arca-orm](https://github.com/scrawler-labs/arca-orm)
