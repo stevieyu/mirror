@@ -71,14 +71,6 @@ function fetch($url, $options)
 
     $ttl = 60 * 60;
 
-    // $m3u8_proxy = '';
-    $m3u8_proxy = 'http://proxy-mdjhpniduu.cn-hongkong.fcapp.run/proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
-    // $m3u8_proxy = 'http://proxy-mdjhpniduu.cn-shenzhen.fcapp.run';
-    if(preg_match('/\.m3u8$/', $url) && !empty($m3u8_proxy)){
-        $url = str_replace('https:/', $m3u8_proxy, $url);
-        $ttl = 60 * 60 * 24 * 365;
-    } 
-
     // $cache_dir = sys_get_temp_dir();
     $cache_dir = __DIR__.'/guzzle-cache';
 
@@ -233,7 +225,7 @@ function filterM3U8NotSort($content)
     if (count($ads)) {
         $regex = '/.*?\s' . generateRegexpFromStrings($ads) . '\s/';
         $content = preg_replace($regex, '', $content);
-    } else if (count($dirs_count) >= 2) {
+    } elseif (count($dirs_count) >= 2) {
         asort($dirs_count);
         $remove_dir = array_key_first($dirs_count);
         $remove_dir = preg_replace(['/\//', '/\./'], ['\/', '\.'], $remove_dir);
@@ -302,23 +294,38 @@ function m3u8Handler($content, $url, $host)
     return $content;
 }
 
-$logStore = new \SleekDB\Store("log", sys_get_temp_dir(), [
+function getIp()
+{
+    $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0] ?? $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['REMOTE_ADDR'];
+
+    return trim($ip) ?: null;
+}
+
+
+$cache_dir = sys_get_temp_dir();
+// $cache_dir = __DIR__.'/sleekdb-cache';
+$logStore = new \SleekDB\Store("log", $cache_dir, [
     // "auto_cache" => true,
     // "cache_lifetime" => 60 * 60 * 24 * 7,
 ]);
 // $logStore->insert($article);
 // $logStore->findAll();
-$logStore->deleteById($logStore->findAll(['_id' => 'asc'], 1)[0]['_id']);
+$logStoreFind = $logStore->findAll(['_id' => 'asc'], 6);
 
-if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && !str_contains($_SERVER['HTTP_REFERER'] ?? '', $_COOKIE['_to'] ?? '')) {
+
+if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && (empty($_COOKIE['_to']) || !str_contains($_SERVER['HTTP_REFERER'] ?? '', $_COOKIE['_to'] ?? ''))) {
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
+}else if(count($logStoreFind) >= 5){
+    $del_id = $logStoreFind[0]['_id'] ?? '';
+    if($del_id) $logStore->deleteById($del_id);
 }
 
 
-
 $log = [
+    'datetime' => date('Y-m-d H:i:s'),
+    'ip' => getIp(),
     'request' => [],
     'response' => []
 ];
@@ -397,7 +404,6 @@ if ($args['method'] == 'GET' && $args['url']['ext'] && !$isContentTxt && !str_co
     $isContentTxt =  preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
 }
 
-
 // dd($args, getallheaders());
 
 $response = fetch($args['url']['raw'], $args);
@@ -431,7 +437,8 @@ if (!$args['url']['ext'] || $isContentTxt) {
             $content
         );
     }
-    $content = m3u8Handler($content, $args['url'], $_SERVER['HTTP_HOST'] ?? '');
+
+    $content = m3u8Handler($content, $args['url'], 'proxy-mdjhpniduu.cn-shenzhen.fcapp.run');
 }
 
 http_response_code($response->getStatusCode());
