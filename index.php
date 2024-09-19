@@ -91,6 +91,7 @@ function fetch($url, $options)
     $response = $client->request($options['method'], $url, [
         'headers' => $options['headers'],
         'body' => $options['body'],
+        'form_params' => $options['form_params'],
         'handler' => $stack,
         'http_errors' => false,
         // 'stream' => true,
@@ -225,7 +226,7 @@ function filterM3U8NotSort($content)
     if (count($ads)) {
         $regex = '/.*?\s' . generateRegexpFromStrings($ads) . '\s/';
         $content = preg_replace($regex, '', $content);
-    } elseif (count($dirs_count) >= 2) {
+    } else if (count($dirs_count) >= 2) {
         asort($dirs_count);
         $remove_dir = array_key_first($dirs_count);
         $remove_dir = preg_replace(['/\//', '/\./'], ['\/', '\.'], $remove_dir);
@@ -296,9 +297,26 @@ function m3u8Handler($content, $url, $host)
 
 function getIp()
 {
-    $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0] ?? $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['REMOTE_ADDR'];
-
-    return trim($ip) ?: null;
+    if ($_SERVER["HTTP_CLIENT_IP"] && strcasecmp($_SERVER["HTTP_CLIENT_IP"], "unknown")) {
+        $ip = $_SERVER["HTTP_CLIENT_IP"];
+    } else {
+        if ($_SERVER["HTTP_X_FORWARDED_FOR"] && strcasecmp($_SERVER["HTTP_X_FORWARDED_FOR"], "unknown")) {
+            $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        } else {
+            if ($_SERVER["REMOTE_ADDR"] && strcasecmp($_SERVER["REMOTE_ADDR"], "unknown")) {
+                $ip = $_SERVER["REMOTE_ADDR"];
+            } else {
+                if (isset ($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'],
+                        "unknown")
+                ) {
+                    $ip = $_SERVER['REMOTE_ADDR'];
+                } else {
+                    $ip = "unknown";
+                }
+            }
+        }
+    }
+    return ($ip);
 }
 
 
@@ -334,7 +352,9 @@ $startTime = microtime(true);
 
 $args = [];
 $args['method'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
 $args['body'] = file_get_contents('php://input');
+$args['form_params'] = $_POST;
 
 $args['url'] = preg_replace('/^\//', '', $_SERVER['REQUEST_URI'] ?? '');
 $args['url'] = preg_match('/^https?:\/\//', $args['url']) ? $args['url'] : 'https://' . $args['url'];
@@ -379,6 +399,11 @@ $args['headers'] = array_filter(
 );
 unset($args['headers']['Host']);
 unset($args['headers']['Origin']);
+if(!empty($args['form_params'])) {
+    unset($args['headers']['Content-Type']);
+}else{
+    $args['form_params'] = null;
+}
 
 
 $log['request'] = $args;
@@ -403,6 +428,7 @@ if ($args['method'] == 'GET' && $args['url']['ext'] && !$isContentTxt && !str_co
     ]));
     $isContentTxt =  preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
 }
+
 
 // dd($args, getallheaders());
 
