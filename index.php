@@ -14,7 +14,7 @@ require file_exists('./vendor/autoload.php') ? './vendor/autoload.php' : './vend
 ini_set('max_execution_time', 3);
 
 
-header('Access-Control-Allow-Origin: '.($_SERVER['HTTP_ORIGIN'] ?? '*'));
+header('Access-Control-Allow-Origin: ' . ($_SERVER['HTTP_ORIGIN'] ?? '*'));
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Max-Age: 86400');
 
@@ -30,9 +30,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') == 'OPTIONS') {
 if (preg_match('/ico$/', $_SERVER['REQUEST_URI'] ?? '')) {
     exit;
 }
-if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) { 
+if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && !in_array('no-cache', $_SERVER)) {
     http_response_code(304);
-    exit; 
+    exit;
 }
 
 if (!function_exists('getallheaders')) {
@@ -51,8 +51,8 @@ if (!function_exists('getallheaders')) {
 class CustomCacheStrategy extends \Kevinrob\GuzzleCache\Strategy\GreedyCacheStrategy
 {
     /**
-     * @param RequestInterface  $request
-     * @param ResponseInterface $response
+     * @param \Psr\Http\Message\RequestInterface  $request
+     * @param \Psr\Http\Message\ResponseInterface $response
      * @return bool
      * @throws \InvalidArgumentException
      */
@@ -72,7 +72,7 @@ function fetch($url, $options)
     $ttl = 60 * 60;
 
     // $cache_dir = sys_get_temp_dir();
-    $cache_dir = __DIR__.'/guzzle-cache';
+    $cache_dir = __DIR__ . '/guzzle-cache';
 
     $stack = \GuzzleHttp\HandlerStack::create();
     $stack->push(new \Kevinrob\GuzzleCache\CacheMiddleware(
@@ -88,7 +88,7 @@ function fetch($url, $options)
 
     $client = new \GuzzleHttp\Client();
 
-    $response = $client->request($options['method'], $url, [
+    return $client->request($options['method'], $url, [
         'headers' => $options['headers'],
         'body' => $options['body'],
         'form_params' => $options['form_params'],
@@ -99,9 +99,6 @@ function fetch($url, $options)
         //http://demo.spiderpy.cn/get/
         // 'proxy' => 'http://177.12.118.160:80'
     ]);
-
-
-    return $response;
 }
 function setCookieFromHeader(string $cookieHeader): void
 {
@@ -171,7 +168,9 @@ function URL($raw)
 {
 
     $url = parse_url($raw);
-    if (!$url || empty($url['host']) || !preg_match('/\w+\.\w+$/', $url['host']) || !checkdnsrr($url['host'], 'A')) return false;
+    if (!$url || empty($url['host']) || !preg_match('/\w+\.\w+$/', $url['host']) || !checkdnsrr($url['host'], 'A')){
+        return false;
+    }
 
     return array_merge(
         $url,
@@ -198,7 +197,7 @@ function filterM3U8NotSort($content)
         $current = intval(preg_replace('/.*?(\d+).ts/', '$1', $i));
         $isNotSort = ($current - $prev) != 1;
 
-        $dir = pathinfo($i, PATHINFO_DIRNAME);
+        $dir = (string)pathinfo($i, PATHINFO_DIRNAME);
         if ($dir && $dir != '.') {
             if (empty($dirs_count[$dir])) {
                 $dirs_count[$dir] = 0;
@@ -226,7 +225,7 @@ function filterM3U8NotSort($content)
     if (count($ads)) {
         $regex = '/.*?\s' . generateRegexpFromStrings($ads) . '\s/';
         $content = preg_replace($regex, '', $content);
-    } else if (count($dirs_count) >= 2) {
+    } elseif (count($dirs_count) >= 2) {
         asort($dirs_count);
         $remove_dir = array_key_first($dirs_count);
         $remove_dir = preg_replace(['/\//', '/\./'], ['\/', '\.'], $remove_dir);
@@ -261,7 +260,6 @@ function generateRegexpFromStrings($array)
 
 function m3u8Handler($content, $url, $host)
 {
-    // dd($url, $content);
     if (preg_match('/http[^#$]+\.m3u8/', $content)) {
         $content = preg_replace('{https:\\\/([^#$]+\.m3u8)}', 'https:\/\/' . $host . '$1', $content);
         return $content;
@@ -286,8 +284,8 @@ function m3u8Handler($content, $url, $host)
             $content = filterM3U8NotSort($content);
 
             //相对转绝对
-            $content = preg_replace('/(\s)(\w+\.ts)/', '$1'.$url['origin'].$url['dir'].'/$2', $content);
-            $content = preg_replace('/(\w+\.key)/', $url['origin'].$url['dir'].'/$1', $content);
+            $content = preg_replace('/(\s)(\w+\.ts)/', '$1' . $url['origin'] . $url['dir'] . '/$2', $content);
+            $content = preg_replace('/(\w+\.key)/', $url['origin'] . $url['dir'] . '/$1', $content);
         }
         return $content;
     }
@@ -297,27 +295,24 @@ function m3u8Handler($content, $url, $host)
 
 function getIp()
 {
-    if ($_SERVER["HTTP_CLIENT_IP"] && strcasecmp($_SERVER["HTTP_CLIENT_IP"], "unknown")) {
-        $ip = $_SERVER["HTTP_CLIENT_IP"];
-    } else {
-        if ($_SERVER["HTTP_X_FORWARDED_FOR"] && strcasecmp($_SERVER["HTTP_X_FORWARDED_FOR"], "unknown")) {
-            $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        } else {
-            if ($_SERVER["REMOTE_ADDR"] && strcasecmp($_SERVER["REMOTE_ADDR"], "unknown")) {
-                $ip = $_SERVER["REMOTE_ADDR"];
-            } else {
-                if (isset ($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'],
-                        "unknown")
-                ) {
-                    $ip = $_SERVER['REMOTE_ADDR'];
-                } else {
-                    $ip = "unknown";
-                }
-            }
+    $ip_sources = [
+        'HTTP_CLIENT_IP',
+        'HTTP_X_FORWARDED_FOR',
+        'HTTP_X_FORWARDED',
+        'HTTP_FORWARDED_FOR',
+        'HTTP_FORWARDED',
+        'REMOTE_ADDR'
+    ];
+
+    foreach ($ip_sources as $source) {
+        if (!empty($_SERVER[$source]) && strcasecmp($_SERVER[$source], "unknown") !== 0) {
+            return $_SERVER[$source];
         }
     }
-    return ($ip);
+
+    return "unknown";
 }
+
 
 
 $cache_dir = sys_get_temp_dir();
@@ -335,9 +330,10 @@ if (preg_match('/^\/(\?.*)?$/', $_SERVER['REQUEST_URI'] ?? '') && (empty($_COOKI
     header('Content-Type: application/json');
     echo json_encode($logStore->findAll(['_id' => 'desc'], 5));
     exit;
-}else if(count($logStoreFind) >= 5){
+} else if (count($logStoreFind) >= 5) {
     $del_id = $logStoreFind[0]['_id'] ?? '';
-    if($del_id) $logStore->deleteById($del_id);
+    if ($del_id)
+        $logStore->deleteById($del_id);
 }
 
 
@@ -369,7 +365,7 @@ if (!$args['url'] && !empty($_SERVER['HTTP_REFERER'])) {
 }
 $cookie_to = $_COOKIE['_to'] ?? '';
 if (!$args['url'] && $cookie_to) {
-    $args['url'] = URL('https://'. $cookie_to . $_SERVER['REQUEST_URI']);
+    $args['url'] = URL('https://' . $cookie_to . $_SERVER['REQUEST_URI']);
 }
 if ($args['url'] && (!$cookie_to || $cookie_to != $args['url']['host'])) {
     setcookie('_to', $args['url']['host'], 0, '/');
@@ -393,15 +389,15 @@ $args['headers'] = array_filter(
             'Accept-Encoding' => 'gzip, deflate',
         ]
     ),
-    fn ($v, $k) => $v,
+    fn($v, $k) => $v,
     // fn($v, $k) => $v && str_contains('Authorization,Accept,User-Agent,Cookie,Content-Type,Host,Referer,Accept-Encoding,Cache-Control,Accept-Language', $k),
     ARRAY_FILTER_USE_BOTH
 );
 unset($args['headers']['Host']);
 unset($args['headers']['Origin']);
-if(!empty($args['form_params'])) {
+if (!empty($args['form_params'])) {
     unset($args['headers']['Content-Type']);
-}else{
+} else {
     $args['form_params'] = null;
 }
 
@@ -426,13 +422,25 @@ if ($args['method'] == 'GET' && $args['url']['ext'] && !$isContentTxt && !str_co
     $response = fetch($args['url']['raw'], array_merge($args, [
         'method' => 'HEAD',
     ]));
-    $isContentTxt =  preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
+    $isContentTxt = preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
+    if(!$isContentTxt) {
+        http_response_code(301);
+        header('Location: ' . $args['url']['raw']);
+        exit;
+    }
 }
 
 
 // dd($args, getallheaders());
 
 $response = fetch($args['url']['raw'], $args);
+
+$isContentTxt = preg_match('/text\/|\/json|\/javascript/', implode('|', $response->getHeader('Content-Type')));
+if(!$isContentTxt) {
+    http_response_code(301);
+    header('Location: ' . $args['url']['raw']);
+    exit;
+}
 
 $content = $response->getBody()->getContents();
 // $headers = array_map(fn($i) => implode(' ', $i), $response->getHeaders());
