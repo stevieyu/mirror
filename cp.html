@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<!-- <link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/basscss@8.0.2/css/basscss.min.css" > -->
+	<link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/bonsai.css@1.2.2/dist/bonsai.min.css">
+	<script src="https://gcore.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+	<script>
+		const list = [
+					{
+						action: '',
+						input: {
+						},
+						submit: 'mysql'
+					},
+				]
+		document.addEventListener('alpine:init', () => {
+			Alpine.data('form', () => ({list}))
+		})
+	</script>
+</head>
+
+<body style="--d:flex;--jc:space-around" x-data="form">
+	<template x-for="i in list">
+		<form :action="i.action" method="post">
+			<template x-for="v,k in i.input">
+				<input type="hidden" :name="k" :value="v">
+			</template>
+			<input type="submit" :value="i.submit">
+		</form>
+	</template>
+</body>
+</html>
