@@ -315,8 +315,8 @@ function getIp()
 
 
 
-$cache_dir = sys_get_temp_dir();
-// $cache_dir = __DIR__.'/sleekdb-cache';
+// $cache_dir = sys_get_temp_dir();
+$cache_dir = __DIR__.'/sleekdb-db';
 $logStore = new \SleekDB\Store("log", $cache_dir, [
     // "auto_cache" => true,
     // "cache_lifetime" => 60 * 60 * 24 * 7,
@@ -403,6 +403,9 @@ if (!empty($args['form_params'])) {
 
 
 $log['request'] = $args;
+$log['request']['url'] = $args['url']['raw'];
+
+
 
 
 $jumpExts = 'ts|zip|gz|bz2|rar|7z|tar|xz|mp4|mp3';
