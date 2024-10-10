@@ -1,8 +1,8 @@
 <?php
 $files = [
-    'statamic/public/build' => 'build',
-    'statamic/public/assets' => 'assets',
-    'statamic/public/vendor' => 'vendor',
+    // 'statamic/public/build' => 'build',
+    // 'statamic/public/assets' => 'assets',
+    // 'statamic/public/vendor' => 'vendor',
 ];
 
 header('Content-Type: text/plain; charset=utf-8');
