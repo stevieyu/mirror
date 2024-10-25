@@ -3,3 +3,5 @@ cache
 tmp
 *.phar*
 .env
+sleekdb-db
+guzzle-cache
