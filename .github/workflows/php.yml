@@ -37,6 +37,12 @@ jobs:
         composer run install-box
         composer run box
 
+    - uses: actions/upload-artifact@v4
+      name: Upload the vendor.phar artifact
+      with:
+        name: vendor.phar
+        path: vendor.phar
+
     - name: deploy
       run: |
         sudo curl https://fastly.jsdelivr.net/gh/git-ftp/git-ftp/git-ftp -o /bin/git-ftp && sudo chmod 755 /bin/git-ftp
